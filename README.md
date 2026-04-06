@@ -54,6 +54,13 @@
 - [27-fiber-architecture/](./27-fiber-architecture/) - Fiber 架构深度剖析
 - [28-concurrent-mode/](./28-concurrent-mode/) - 并发特性（Transitions/Suspense/流式SSR）
 
+### 🔥 全栈与架构 ✅ 新增
+- [26-micro-frontend/](./26-micro-frontend/) - **微前端架构** (Qiankun/Module Federation/Monorepo部署)
+- [27-pwa/](./27-pwa/) - **PWA离线应用** (Service Worker/Web App Manifest/推送通知)
+- [28-graphql/](./28-graphql/) - **GraphQL与Apollo** (Schema设计/Apollo Client/Subscription)
+- [29-react-native/](./29-react-native/) - **React Native移动端** (导航/权限/打包发布)
+- [30-design-patterns/](./30-design-patterns/) - **高级设计模式与架构** (状态机/分层/FSD/插件系统)
+
 ### 🎯 实战案例 ✅ 已完成
 - [20-realworld-examples/](./20-realworld-examples/) - 企业级实战案例集
 
