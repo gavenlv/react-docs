@@ -36,11 +36,18 @@
 - [14-state-management/](./14-state-management/) - 状态管理（Redux Toolkit & Zustand）
 
 ### 第三阶段：高级应用 ✅ 已完成
-- [15-performance-optimization/](./15-performance-optimization/) - 性能优化
+- [15-performance-optimization/](./15-performance-optimization/) - 性能优化基础
 - [16-typescript-react/](./16-typescript-react/) - TypeScript + React 完全集成
 - [17-testing/](./17-testing/) - 单元测试（Jest + React Testing Library）
 - [18-advanced-patterns/](./18-advanced-patterns/) - 高级设计模式
 - [19-server-side-rendering/](./19-server-side-rendering/) - Next.js 全栈开发
+
+### ⚡ 高级专题 ✅ 新增
+- [21-advanced-performance/](./21-advanced-performance/) - **深度性能优化实战** (渲染/网络/内存/构建优化)
+- [22-animation/](./22-animation/) - **React动画与交互效果** (Framer Motion/GSAP/滚动动画)
+- [23-accessibility/](./23-accessibility/) - **无障碍访问(A11y)** (键盘导航/屏幕阅读器/WCAG标准)
+- [24-i18n/](./24-i18n/) - **国际化与本地化** (多语言/i18next/RTL/日期格式化)
+- [25-error-handling/](./25-error-handling/) - **错误处理与日志系统** (Error Boundary/Sentry/优雅降级)
 
 ### 第四阶段：专家深入 ✅ 已完成
 - [26-internals/](./26-internals/) - React 内部原理（Virtual DOM/Diff算法）
