@@ -1,0 +1,280 @@
+/* React 动画演示 - 全局样式 */
+
+/* 重置默认样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  color: #e0e0e0;
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* 应用容器 */
+.app {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+/* 页面标题 */
+.app-title {
+  text-align: center;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+  background: linear-gradient(90deg, #f093fb, #f5576c, #4facfe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.app-subtitle {
+  text-align: center;
+  color: #aaa;
+  margin-bottom: 40px;
+  font-size: 0.95rem;
+}
+
+/* Tab 导航 */
+.tab-nav {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.tab-btn {
+  padding: 8px 16px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 20px;
+  background: rgba(255,255,255,0.06);
+  color: #ccc;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.3s;
+}
+
+.tab-btn:hover {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  border-color: transparent;
+}
+
+/* 演示区块 */
+.demo-section {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 24px;
+}
+
+.demo-title {
+  font-size: 1.2rem;
+  color: #4facfe;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.demo-desc {
+  color: #999;
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+}
+
+/* CSS 基础动画演示 */
+.css-transition-box {
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 12px;
+  margin: 20px auto;
+  transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 600;
+}
+
+.css-transition-box:hover {
+  transform: scale(1.15) rotate(5deg);
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+}
+
+/* CSS @keyframes 动画 */
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.08); opacity: 0.7; }
+}
+
+.css-keyframe-box {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #f5576c, #ff6b6b);
+  border-radius: 12px;
+  margin: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.8rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.css-keyframe-box:nth-child(2) { animation-delay: 0.3s; }
+.css-keyframe-box:nth-child(3) { animation-delay: 0.6s; }
+
+/* Drag 演示区 */
+.drag-area {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.drag-box {
+  width: 80px;
+  height: 80px;
+  border-radius: 14px;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  user-select: none;
+}
+
+.drag-box:active {
+  cursor: grabbing;
+}
+
+/* Variants 演示 */
+.variants-container {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.variant-box {
+  width: 70px;
+  height: 70px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+/* Stagger 演示 */
+.stagger-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  max-width: 400px;
+  margin: 12px auto;
+}
+
+.stagger-item {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Layout 演示 */
+.layout-switcher {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.layout-btn {
+  padding: 6px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: transparent;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.layout-btn.active {
+  background: linear-gradient(135deg, #43e97b, #38f9d7);
+  color: #000;
+  border-color: transparent;
+}
+
+/* Hover / Tap 演示 */
+.gesture-box {
+  width: 100px;
+  height: 100px;
+  border-radius: 16px;
+  margin: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+/* AnimatePresence 演示 */
+.presence-controls {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.presence-btn {
+  padding: 6px 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: transparent;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.presence-btn:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.presence-item {
+  padding: 12px 24px;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 600;
+  text-align: center;
+  margin: 8px 0;
+}

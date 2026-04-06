@@ -1,0 +1,213 @@
+/* ===== 全局 CSS 变量 ===== */
+:root {
+  --primary: #646cff;
+  --primary-light: #747bff;
+  --bg: #fff;
+  --bg-secondary: #f5f5f5;
+  --text: #213547;
+  --text-secondary: #666;
+  --border: #e5e5e5;
+  --radius: 8px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+  --success: #52c41a;
+  --danger: #ff4d4f;
+  --warning: #faad14;
+  --info: #1890ff;
+}
+
+/* ===== 全局重置 ===== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+#root { max-width: 960px; margin: 0 auto; padding: 24px; }
+
+/* ===== 标签页导航 ===== */
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.tab-btn {
+  padding: 10px 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+}
+.tab-btn:hover { color: var(--primary); }
+.tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+/* ===== 卡片 ===== */
+.card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+.card h3 { margin-bottom: 12px; color: var(--text); font-size: 16px; }
+
+/* ===== 按钮 ===== */
+.btn {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+.btn:hover { border-color: var(--primary); color: var(--primary); }
+.btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+.btn-primary:hover { background: var(--primary-light); border-color: var(--primary-light); }
+
+/* ===== 输入框 ===== */
+.input {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2); }
+
+/* ===== 标签 ===== */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.badge-success { background: #f6ffed; color: var(--success); border: 1px solid #b7eb8f; }
+.badge-danger { background: #fff2f0; color: var(--danger); border: 1px solid #ffa39e; }
+.badge-warning { background: #fffbe6; color: var(--warning); border: 1px solid #ffe58f; }
+.badge-info { background: #e6f7ff; color: var(--info); border: 1px solid #91d5ff; }
+
+/* ===== 代码块 ===== */
+.code-block {
+  background: #f6f8fa;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  font-family: 'Fira Code', 'Consolas', monospace;
+  font-size: 13px;
+  overflow-x: auto;
+  white-space: pre;
+  margin: 8px 0;
+}
+
+/* ===== 标题 ===== */
+.page-title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+.page-desc { color: var(--text-secondary); margin-bottom: 24px; font-size: 15px; }
+
+/* ===== 列表 ===== */
+.list { list-style: none; }
+.list-item {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.list-item:last-child { border-bottom: none; }
+
+/* ===== 表格 ===== */
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+th { background: var(--bg-secondary); font-weight: 600; font-size: 13px; color: var(--text-secondary); }
+
+/* ===== 描述列表 ===== */
+.desc-list { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; font-size: 14px; }
+.desc-list dt { font-weight: 600; color: var(--text-secondary); }
+.desc-list dd { margin: 0; }
+
+/* ===== 提示框 ===== */
+.tip { padding: 12px 16px; border-radius: var(--radius); font-size: 14px; margin: 8px 0; }
+.tip-info { background: #e6f7ff; border-left: 3px solid var(--info); }
+.tip-warning { background: #fffbe6; border-left: 3px solid var(--warning); }
+.tip-danger { background: #fff2f0; border-left: 3px solid var(--danger); }
+
+/* ===== 头像 ===== */
+.avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border);
+}
+.avatar-sm { width: 32px; height: 32px; }
+.avatar-md { width: 48px; height: 48px; }
+.avatar-lg { width: 64px; height: 64px; }
+.avatar-xl { width: 80px; height: 80px; }
+
+/* ===== 用户卡片 ===== */
+.user-card {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  box-shadow: var(--shadow);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.user-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+.user-card .user-info { flex: 1; }
+.user-card .user-name { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+.user-card .user-role { color: var(--text-secondary); font-size: 14px; margin-bottom: 8px; }
+.user-card .user-bio { color: var(--text-secondary); font-size: 14px; margin-bottom: 12px; }
+
+/* ===== Flex 辅助 ===== */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.flex-wrap { flex-wrap: wrap; }
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+.gap-16 { gap: 16px; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.mt-8 { margin-top: 8px; }
+.mt-16 { margin-top: 16px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-16 { margin-bottom: 16px; }
+
+/* ===== 技能标签 ===== */
+.skill-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  background: #f0f0f0;
+  color: var(--text-secondary);
+  margin: 2px 4px 2px 0;
+}
+
+/* ===== 统计数字 ===== */
+.stat-item { text-align: center; }
+.stat-value { font-size: 20px; font-weight: 700; color: var(--primary); }
+.stat-label { font-size: 12px; color: var(--text-secondary); }
+
+/* ===== 分割线 ===== */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 16px 0;
+}

@@ -1,0 +1,329 @@
+/* ========== CSS 变量定义 ========== */
+:root {
+  --bg: #0f172a;
+  --bg-card: #1e293b;
+  --bg-hover: #334155;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --accent: #38bdf8;
+  --accent2: #818cf8;
+  --accent3: #34d399;
+  --accent4: #f472b6;
+  --danger: #f87171;
+  --warning: #fbbf24;
+  --border: #334155;
+  --radius: 10px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+
+/* ========== 全局重置 ========== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ========== 应用容器 ========== */
+.app-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
+
+/* ========== 标题区域 ========== */
+.app-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.app-header h1 {
+  font-size: 2rem;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 6px;
+}
+.app-header p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* ========== 标签页导航 ========== */
+.tab-nav {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 4px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.tab-btn {
+  flex: 1;
+  min-width: 130px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+.tab-btn:hover { background: var(--bg-hover); color: var(--text); }
+.tab-btn.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+}
+
+/* ========== 卡片样式 ========== */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+.card h3 {
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+  color: var(--accent);
+}
+.card p, .card li {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+/* ========== 代码块 ========== */
+.code-block {
+  background: #0d1117;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin: 10px 0;
+  overflow-x: auto;
+  font-family: 'Fira Code', 'Consolas', monospace;
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: #c9d1d9;
+}
+
+/* ========== 树结构可视化 ========== */
+.tree-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  min-height: 300px;
+}
+.tree-level {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 16px;
+  position: relative;
+}
+.tree-level::before {
+  content: '';
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  width: 2px;
+  height: 16px;
+  background: var(--border);
+}
+.fiber-node {
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-align: center;
+  min-width: 80px;
+  transition: all 0.4s;
+  position: relative;
+  cursor: default;
+}
+.fiber-node.processing {
+  animation: pulse 0.8s ease-in-out;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+}
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+/* ========== 按钮 ========== */
+.btn {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+}
+.btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-secondary {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+.btn-secondary:hover { background: var(--border); }
+.btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+.btn-group { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
+
+/* ========== 进度条 ========== */
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--bg);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 10px 0;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s;
+  background: linear-gradient(90deg, var(--accent), var(--accent3));
+}
+
+/* ========== 双缓冲切换 ========== */
+.buffer-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.buffer-tree {
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  transition: all 0.5s;
+}
+.buffer-tree.active-tree {
+  border-color: var(--accent3);
+  box-shadow: 0 0 20px rgba(52, 211, 153, 0.2);
+}
+.buffer-tree h4 {
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+/* ========== 时间切片面板 ========== */
+.slice-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  margin: 4px 0;
+  border-radius: 6px;
+  background: var(--bg);
+  font-size: 0.85rem;
+}
+.slice-bar {
+  height: 24px;
+  border-radius: 4px;
+  transition: width 0.3s;
+}
+
+/* ========== Reconciliation 对比 ========== */
+.recon-compare {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.recon-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: var(--accent);
+  padding-top: 30px;
+}
+
+/* ========== 工作流程步骤 ========== */
+.step-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+.step-item {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  transition: all 0.3s;
+}
+.step-item.active-step {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.step-item.done-step {
+  background: var(--accent3);
+  color: #fff;
+  border-color: var(--accent3);
+}
+.step-arrow { color: var(--text-muted); font-size: 0.9rem; }
+
+/* ========== 日志面板 ========== */
+.log-panel {
+  background: #0d1117;
+  border-radius: 8px;
+  padding: 12px 14px;
+  max-height: 200px;
+  overflow-y: auto;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.78rem;
+  line-height: 1.8;
+  color: #8b949e;
+  margin-top: 12px;
+}
+.log-entry { padding: 2px 0; }
+.log-entry .log-time { color: #6e7681; }
+.log-entry .log-action { color: var(--accent); }
+.log-entry .log-detail { color: #c9d1d9; }
+.log-entry .log-success { color: var(--accent3); }
+.log-entry .log-warn { color: var(--warning); }
+
+/* ========== 描述列表 ========== */
+.desc-list { list-style: none; padding: 0; }
+.desc-list li {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+}
+.desc-list li:last-child { border-bottom: none; }
+.desc-label {
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 90px;
+  flex-shrink: 0;
+}
+.desc-value { color: var(--text-muted); }
+
+/* ========== 响应式 ========== */
+@media (max-width: 768px) {
+  .buffer-container { grid-template-columns: 1fr; }
+  .recon-compare { grid-template-columns: 1fr; }
+  .recon-arrow { transform: rotate(90deg); padding: 10px 0; }
+  .tab-btn { min-width: 100px; font-size: 0.75rem; }
+}
