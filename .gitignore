@@ -104,6 +104,12 @@ dist
 # vitepress cache directory
 **/.vitepress/cache
 
+# 各章节示例代码目录
+**/codes/*/node_modules/
+**/codes/*/dist/
+**/codes/*/.vite/
+**/codes/*/package-lock.json
+
 # Docusaurus cache and generated files
 .docusaurus
 

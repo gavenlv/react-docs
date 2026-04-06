@@ -1168,6 +1168,721 @@ const apiKey = process.env.NEXT_PUBLIC_API_KEY;
 
 ---
 
+## 🔬 SSR 的深层原理
+
+### 1. SSR 的完整生命周期——从请求到页面渲染
+
+一次完整的 SSR 请求，经历了"服务端生成 HTML → 浏览器接收 → Hydration（水合）→ 可交互"的过程。让我们用时间线来详细拆解：
+
+```
+时间线：一次 SSR 请求的完整生命周期
+
+浏览器                          服务器                     CDN/数据库
+  │                               │                           │
+  │  ① 用户输入 URL / 访问链接     │                           │
+  │──────────────────────────────>│                           │
+  │                               │  ② 服务器接收请求          │
+  │                               │                           │
+  │                               │  ③ 调用 API / 查数据库     │
+  │                               │──────────────────────────>│
+  │                               │<──────────────────────────│
+  │                               │  ④ 获取数据                │
+  │                               │                           │
+  │                               │  ⑤ 执行 React 组件渲染     │
+  │                               │  (renderToString)         │
+  │                               │  生成完整的 HTML 字符串     │
+  │                               │                           │
+  │  ⑥ 返回完整 HTML + JS bundle  │                           │
+  │<──────────────────────────────│                           │
+  │                               │                           │
+  │  ⑦ 浏览器渲染 HTML（用户立即看到内容！）                      │
+  │  此时页面是"死"的——没有事件绑定                              │
+  │                               │                           │
+  │  ⑧ 下载 JS bundle              │                           │
+  │<══════════════════════════════│                           │
+  │                               │                           │
+  │  ⑨ 执行 JS → React Hydration（水合）                       │
+  │  React 把"死的 HTML"和 JS 逻辑"粘"在一起                    │
+  │  绑定事件监听器，初始化状态                                  │
+  │                               │                           │
+  │  ⑩ 页面变成完全可交互的应用！       │                           │
+  │  （点击、输入、导航……全部可用）                               │
+  │                               │                           │
+```
+
+💡 **大白话**：SSR 的过程就像是**网购家具**：
+- 服务器已经帮你把家具**组装好了**（生成完整 HTML），你一打开快递就能看到成品（用户立刻看到页面）
+- 但家具还没有**上螺丝**（没有绑定事件），你需要按说明书把螺丝拧上（Hydration），之后才能打开抽屉、推拉门（交互）
+
+#### Hydration（水合）的原理和常见问题
+
+Hydration 是 SSR 中最核心、也最容易出问题的环节。它的工作原理：
+
+```
+Hydration（水合）过程详解：
+
+服务端生成的 HTML：              React 在浏览器中的"重建"：
+┌──────────────────┐          ┌──────────────────┐
+│ <div id="root">  │          │ React.createElement │
+│   <h1>Hello</h1>│    ══>   │   → h1 元素        │
+│   <button>Click</button>   │   → button 元素     │
+│ </div>           │          │   → 绑定 onClick    │
+└──────────────────┘          └──────────────────┘
+  服务端"画"好的 HTML              React 在浏览器中
+  （静态的，不可交互）              "对照"着重建虚拟 DOM
+                                   然后绑定事件，变成可交互的
+
+关键要求：服务端 HTML 和客户端 React 渲染结果必须一致！
+如果不一致 → Hydration Mismatch 警告
+```
+
+⚠️ **Hydration Mismatch（水合不匹配）** 是 SSR 中最常见的警告：
+
+```typescript
+// ❌ 常见原因1：服务端和客户端渲染结果不同
+function TimeDisplay() {
+  const time = new Date().toLocaleTimeString();
+
+  return <div>当前时间：{time}</div>;
+  // 服务端生成：当前时间：14:30:05
+  // 客户端生成：当前时间：14:30:07（过了 2 秒，时间不同！）
+  // → Hydration Mismatch！
+}
+
+// ✅ 解决方案：用 useEffect 把动态内容放到客户端渲染
+function TimeDisplay() {
+  const [time, setTime] = useState('');
+
+  useEffect(() => {
+    // useEffect 只在客户端执行，不影响服务端渲染
+    setTime(new Date().toLocaleTimeString());
+    const timer = setInterval(() => {
+      setTime(new Date().toLocaleTimeString());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return <div>当前时间：{time}</div>;
+  // 服务端生成：当前时间：（空字符串，两端一致 ✅）
+  // 客户端渲染后：当前时间：14:30:07（客户端自动更新）
+}
+
+// ❌ 常见原因2：使用了服务端不存在的 API
+function RandomComponent() {
+  const width = window.innerWidth;  // 服务端没有 window 对象！
+  // → 服务端报错：ReferenceError: window is not defined
+  return <div>宽度：{width}px</div>;
+}
+
+// ✅ 解决方案：检查环境或用 useEffect
+function RandomComponent() {
+  const [width, setWidth] = useState(0);
+
+  useEffect(() => {
+    setWidth(window.innerWidth);
+  }, []);
+
+  return <div>宽度：{width}px</div>;
+}
+```
+
+```
+Hydration Mismatch 的常见原因速查：
+
+┌─────────────────────────┬───────────────────────────────────────┐
+│ 原因                     │ 解决方案                               │
+├─────────────────────────┼───────────────────────────────────────┤
+│ 时间/随机数不同步         │ useEffect + useState                   │
+│ 访问 window/document     │ useEffect 或 typeof window !== 'undefined' 检查 │
+│ 条件渲染依赖客户端状态    │ 用 suppressHydrationWarning（谨慎使用）│
+│ 第三方库不支持 SSR       │ 动态导入 next/dynamic { ssr: false }  │
+│ HTML 嵌套不合法          │ 检查是否把 <p> 嵌套在 <p> 里等        │
+└─────────────────────────┴───────────────────────────────────────┘
+```
+
+---
+
+### 2. SSR vs CSR vs SSG vs ISR 深度对比
+
+让我们用完整的工作流程图和性能指标来深入对比四种方案：
+
+```
+四种渲染方案的完整工作流程：
+
+┌──────────────────── CSR（客户端渲染）───────────────────────┐
+│                                                            │
+│  浏览器请求 → 服务器返回空 HTML + JS bundle                  │
+│       ↓                                                    │
+│  浏览器下载 JS → 执行 JS → 调用 API 获取数据 → 渲染页面      │
+│                                                            │
+│  用户体验：空白的等待 → loading 动画 → 内容出现               │
+│  等待时间：█████████████████████████（较长）                 │
+└────────────────────────────────────────────────────────────┘
+
+┌──────────────────── SSR（服务端渲染）───────────────────────┐
+│                                                            │
+│  浏览器请求 → 服务器获取数据 → 渲染 HTML → 返回完整 HTML      │
+│       ↓                                                    │
+│  浏览器渲染 HTML（用户立即看到内容！）                        │
+│       ↓                                                    │
+│  下载 JS → Hydration → 页面可交互                            │
+│                                                            │
+│  用户体验：立即看到内容 → 短暂等待后可交互                     │
+│  等待时间：████████（首屏快，交互稍慢）                        │
+└────────────────────────────────────────────────────────────┘
+
+┌──────────────────── SSG（静态生成）─────────────────────────┐
+│                                                            │
+│  构建时（npm run build）→ 预渲染所有页面为 HTML 文件          │
+│       ↓                                                    │
+│  浏览器请求 → CDN 直接返回 HTML 文件（极快！）                 │
+│       ↓                                                    │
+│  下载 JS → Hydration → 页面可交互                            │
+│                                                            │
+│  用户体验：极快看到内容 → 短暂等待后可交互                     │
+│  等待时间：████（最快！）                                    │
+│  ⚠️ 数据是构建时的，不会自动更新                              │
+└────────────────────────────────────────────────────────────┘
+
+┌──────────────────── ISR（增量静态再生成）────────────────────┐
+│                                                            │
+│  构建时 → 预渲染页面 → 缓存到 CDN                            │
+│       ↓                                                    │
+│  浏览器请求 → CDN 返回缓存的 HTML（快！）                     │
+│       ↓                                                    │
+│  如果缓存过期 → 后台重新生成 → 下次请求返回新的                │
+│       ↓                                                    │
+│  下载 JS → Hydration → 页面可交互                            │
+│                                                            │
+│  用户体验：快 + 数据定期更新                                  │
+│  等待时间：████（快！）                                      │
+│  ✅ 兼顾了速度和数据新鲜度                                    │
+└────────────────────────────────────────────────────────────┘
+```
+
+#### 性能指标深度对比
+
+| 性能指标 | CSR | SSR | SSG | ISR |
+|---------|-----|-----|-----|-----|
+| **TTFB**（首字节时间）| 快（返回空 HTML） | 慢（要等服务器处理） | 最快（CDN 直接返回） | 快（CDN 缓存） |
+| **FCP**（首次内容绘制）| 慢（要等 JS 下载执行） | 快（服务端已渲染内容） | 最快（CDN + 已渲染） | 快 |
+| **LCP**（最大内容绘制）| 慢 | 快 | 快 | 快 |
+| **TTI**（可交互时间） | 中等 | 中等 | 快 | 快 |
+| **SEO 友好度** | 差 | 好 | 好 | 好 |
+| **服务器负载** | 无（纯静态） | 高（每次请求都要渲染） | 无（构建时一次性） | 低（偶尔重新生成） |
+| **数据新鲜度** | 实时 | 实时 | 构建时固定 | 定期更新 |
+
+💡 **大白话**：
+- TTFB = 餐厅**上第一道菜的时间**（等服务器响应）
+- FCP = 你**看到第一口食物的时间**（页面开始有内容）
+- LCP = 主菜**上齐的时间**（页面主要内容加载完成）
+- TTI = 你**能开始吃的时间**（页面可以交互了）
+
+#### 渲染方案选择决策树
+
+```
+你的页面需要什么？
+  │
+  ├─ 需要实时数据（股价、聊天、实时监控）
+  │     └─ SSR（每次请求都获取最新数据）
+  │
+  ├─ 数据偶尔变化（博客、商品列表、新闻）
+  │     ├─ 可以接受构建时固定 → SSG
+  │     └─ 需要定期更新 → ISR（推荐！）
+  │
+  ├─ 用户专属内容（个人主页、购物车）
+  │     └─ SSR（每个用户看到的内容不同）
+  │
+  ├─ 不需要 SEO，纯交互界面（后台管理、仪表盘）
+  │     └─ CSR（最简单，开发效率高）
+  │
+  └─ 混合需求（一个页面有多种区域）
+        └─ 混合渲染：
+              - 页面框架 → SSG/ISR
+              - 个性化区域 → CSR（客户端获取数据）
+              - 首屏关键内容 → SSR
+```
+
+---
+
+### 3. Next.js 的渲染原理
+
+#### getServerSideProps vs getStaticProps vs getStaticPaths 的执行时机
+
+在 Next.js 的 Pages Router 中，这三个函数决定了页面的渲染方式：
+
+```
+三个函数的执行时机：
+
+                    构建时（npm run build）
+                         │
+    ┌────────────────────┼────────────────────┐
+    │                    │                    │
+    ▼                    ▼                    ▼
+getStaticPaths()    getStaticProps()     （getServerSideProps 不执行）
+"有哪些动态路径？"   "预渲染每个路径"       
+    │                    │                    
+    │  /blog/hello  →  生成 hello.html       
+    │  /blog/world  →  生成 world.html       
+    │  /blog/react  →  生成 react.html       
+    ▼                    ▼                   
+
+              ──────── 用户请求 ────────
+
+                    用户请求 /blog/hello
+                         │
+                         ▼
+              CDN 直接返回 hello.html（SSG）
+              或者 SSR + getServerSideProps
+
+                    ──────── ISR ────────
+
+                    用户请求 /blog/hello
+                         │
+              ┌──────────┴──────────┐
+              ▼                     ▼
+        缓存未过期               缓存已过期
+              │                     │
+              ▼                     ▼
+        返回缓存的 HTML        返回旧 HTML +
+                              后台触发重新生成
+                              下次请求返回新的
+```
+
+```typescript
+// 执行时机对比（Pages Router 写法）：
+
+// getStaticProps —— 构建时执行（SSG）
+export async function getStaticProps() {
+  // 这个函数在 npm run build 时执行一次
+  // 生成静态 HTML 文件
+  const posts = await fetch('https://api.example.com/posts').then(r => r.json());
+  return {
+    props: { posts },          // 传给页面的 props
+    // revalidate: 60,         // 加上这行就变成 ISR
+  };
+}
+
+// getServerSideProps —— 每次请求时执行（SSR）
+export async function getServerSideProps(context) {
+  // 这个函数在每次用户请求时执行
+  // context 包含 req, res, query 等信息
+  const { id } = context.params;
+  const user = await fetch(`https://api.example.com/users/${id}`).then(r => r.json());
+  return {
+    props: { user },           // 传给页面的 props
+  };
+}
+
+// getStaticPaths —— 构建时告诉 Next.js 有哪些动态路径（配合 getStaticProps 使用）
+export async function getStaticPaths() {
+  // 返回所有可能的动态参数值
+  const posts = await fetch('https://api.example.com/posts').then(r => r.json());
+  return {
+    paths: posts.map(post => ({
+      params: { slug: post.slug },  // 对应 [slug] 动态路由
+    })),
+    fallback: 'blocking',  // 'blocking' | true | false
+  };
+}
+```
+
+```
+fallback 参数的含义（重要！）：
+
+fallback: false    → 只有 getStaticPaths 列出的路径有效，其他路径返回 404
+fallback: true     → 没有预生成的路径也能访问，但首次请求时会在服务器端渲染（显示 loading）
+fallback: 'blocking' → 没有预生成的路径也能访问，但用户要等服务端渲染完成后才能看到页面
+```
+
+#### App Router 的 Server Components 原理
+
+Next.js 13+ 的 App Router 引入了 **React Server Components（RSC）**，这是 React 架构的一次重大变革：
+
+```
+Server Components vs Client Components 的本质区别：
+
+┌─────────────────────────────────┬─────────────────────────────────┐
+│ Server Component（服务端组件）    │ Client Component（客户端组件）    │
+├─────────────────────────────────┼─────────────────────────────────┤
+│ 默认行为，不需要标记              │ 需要标记 'use client'            │
+│ 在服务器上执行                    │ 在浏览器中执行                    │
+│ 可以直接访问数据库                │ 不能直接访问数据库                │
+│ 可以读取文件系统                  │ 不能读取文件系统                  │
+│ 可以使用服务器端密钥              │ 不能使用服务器端密钥              │
+│ 不能使用 useState/useEffect      │ 可以使用所有 Hooks               │
+│ 不能绑定事件（onClick 等）       │ 可以绑定事件                     │
+│ 不能使用浏览器 API               │ 可以使用浏览器 API               │
+│ 不包含在 JS bundle 中            │ 包含在 JS bundle 中              │
+│ 体积更小（客户端 JS 更少）        │ 体积正常                        │
+└─────────────────────────────────┴─────────────────────────────────┘
+
+💡 Server Component 的"魔法"：
+它在服务器上执行完渲染后，把 HTML "流"给客户端
+客户端收到的只是渲染结果（HTML），而不是执行代码（JS）
+所以 Server Component 的代码不会发送到浏览器，减少了 JS 体积
+```
+
+```tsx
+// App Router 中的 Server Component 默认行为
+// src/app/page.tsx
+
+// 这是一个 Server Component（默认，不需要任何标记）
+// 它在服务器上执行，生成的 HTML 发送给浏览器
+async function BlogPage() {
+  // 直接 await！在服务器上执行，不需要 useEffect
+  const posts = await db.post.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 10,
+  });
+
+  // 这个组件的代码不会发送到浏览器！
+  // 浏览器只收到渲染后的 HTML
+  return (
+    <div>
+      <h1>博客列表</h1>
+      {posts.map(post => (
+        <article key={post.id}>
+          <h2>{post.title}</h2>
+          <p>{post.excerpt}</p>
+        </article>
+      ))}
+
+      {/* 只有 Client Component 的代码会发送到浏览器 */}
+      <LikeButton postId={posts[0].id} />
+    </div>
+  );
+}
+```
+
+```
+Server Component 的渲染流程：
+
+服务端                          客户端（浏览器）
+  │                               │
+  │ 执行 Server Component 代码     │
+  │ 读取数据库、文件系统等           │
+  │       ↓                       │
+  │ 渲染成 React Element Tree      │
+  │       ↓                       │
+  │ 序列化为特殊格式（RSC Payload）  │
+  │ 包含：HTML + 组件引用 + 状态     │
+  │       ↓                       │
+  │ ══════════════════════════>    │
+  │     发送给浏览器                │
+  │                               │ 解析 RSC Payload
+  │                               │       ↓
+  │                               │ 渲染 HTML（用户看到内容）
+  │                               │       ↓
+  │                               │ 加载 Client Component 的 JS
+  │                               │       ↓
+  │                               │ Hydration（水合）
+  │                               │ 页面可交互
+```
+
+#### Streaming SSR 的原理（renderToPipeableStream）
+
+传统的 SSR（`renderToString`）有一个致命问题：**必须等整个页面渲染完才能发送**。如果页面某个区域的数据获取很慢，整个页面的 TTFB 都会被拖慢。
+
+**Streaming SSR** 解决了这个问题——它像流水线一样，先把已渲染好的部分发送给浏览器，让用户尽早看到内容：
+
+```
+传统 SSR（renderToString）vs Streaming SSR（renderToPipeableStream）：
+
+传统 SSR：
+  服务器：[获取导航数据] [获取文章数据] [获取推荐数据] [全部渲染完] → 一次性发送
+  用户：   ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ → 看到完整页面
+          （全程等待，什么都看不到）
+
+Streaming SSR：
+  服务器：[获取导航数据] → 发送导航 HTML → [获取文章数据] → 发送文章 HTML → [获取推荐] → 发送推荐
+  用户：   ░░█████░░░░░░████████░░░░░░░████████
+          （先看到导航，再看到文章，最后看到推荐——逐步呈现）
+```
+
+```typescript
+// Streaming SSR 的核心 API（简化版）
+// 这是 Next.js 内部使用的原理：
+
+import { renderToPipeableStream } from 'react-dom/server';
+
+function handleRequest(req, res) {
+  const html = renderToPipeableStream(
+    <App />,
+    {
+      // bootstrapScripts：指定客户端 JS 文件
+      bootstrapScripts: ['/static/js/main.js'],
+
+      // onShellReady：最外层 HTML 准备好了（但内部可能还在渲染）
+      onShellReady() {
+        // 立即开始流式发送！不用等全部渲染完
+        res.setHeader('content-type', 'text/html');
+        stream.pipe(res);
+      },
+
+      // onShellError：最外层渲染就出错了
+      onShellError(error) {
+        res.status(500);
+        res.send('服务端渲染出错');
+      },
+
+      // onAllReady：所有内容都渲染完了（包括 Suspense 的 fallback 之后的内容）
+      onAllReady() {
+        // 如果有 Suspense 包裹的慢组件，这里会在它们渲染完后触发
+      },
+    }
+  );
+}
+```
+
+```
+Streaming SSR + Suspense 的配合：
+
+<Suspense fallback={<Skeleton />}>
+  <SlowComponent />    {/* 数据获取很慢的组件 */}
+</Suspense>
+
+渲染过程：
+  1. 遇到 <Suspense> → 先渲染 fallback（<Skeleton />）
+  2. 发送骨架屏给浏览器（用户先看到 loading 状态）
+  3. <SlowComponent> 在后台继续渲染
+  4. 渲染完成后，替换掉骨架屏
+  5. 发送替换指令给浏览器
+
+结果：用户不需要等最慢的组件，先看到其他内容！
+```
+
+💡 **大白话**：Streaming SSR 就像是**看视频的渐进式加载**——你不需要等整个视频下载完才能开始看，而是边下载边看。同理，页面也不需要等所有数据都拿到才能显示，先拿到什么就先渲染什么。
+
+---
+
+### 4. SSR 的常见陷阱原理级解析
+
+#### 陷阱一：window/document 在服务端不存在
+
+```
+为什么服务端没有 window/document？
+
+浏览器环境：                          Node.js（服务端）环境：
+┌──────────────────────────┐        ┌──────────────────────────┐
+│ window (全局对象)          │        │ global (全局对象)          │
+│ ├── document              │        │ ├── process               │
+│ │   ├── getElementById    │        │ ├── __dirname             │
+│ │   └── querySelector     │        │ ├── Buffer                │
+│ ├── localStorage          │        │ └── require()             │
+│ ├── sessionStorage        │        │                          │
+│ ├── navigator             │        │ ❌ 没有 window            │
+│ ├── location              │        │ ❌ 没有 document          │
+│ └── fetch / XMLHttpRequest│        │ ❌ 没有 localStorage      │
+└──────────────────────────┘        │ ❌ 没有 navigator          │
+                                     └──────────────────────────┘
+```
+
+```typescript
+// ❌ 错误写法——直接使用 window
+function MyComponent() {
+  const isMobile = window.innerWidth < 768;  // 服务端报错！
+  return <div>{isMobile ? '手机版' : '电脑版'}</div>;
+}
+
+// ✅ 方案1：用 useEffect 延迟到客户端
+function MyComponent() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setIsMobile(window.innerWidth < 768);
+    // 还可以监听 resize 事件
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return <div>{isMobile ? '手机版' : '电脑版'}</div>;
+}
+
+// ✅ 方案2：动态导入（Next.js 专属）
+import dynamic from 'next/dynamic';
+
+const MobileMenu = dynamic(() => import('./MobileMenu'), {
+  ssr: false,  // 告诉 Next.js：这个组件只在客户端渲染
+});
+
+// ✅ 方案3：条件判断
+function MyComponent() {
+  const isBrowser = typeof window !== 'undefined';
+  const isMobile = isBrowser ? window.innerWidth < 768 : false;
+
+  return <div>{isMobile ? '手机版' : '电脑版'}</div>;
+}
+```
+
+#### 陷阱二：Hydration mismatch 的原因和解决
+
+```typescript
+// ❌ 原因1：使用了 Date.now() 或 Math.random()
+function RandomGreeting() {
+  const greeting = Math.random() > 0.5 ? '你好' : 'Hello';
+  // 服务端：Math.random() = 0.7 → "Hello"
+  // 客户端：Math.random() = 0.3 → "你好"
+  // → Mismatch！
+
+  // ✅ 解决：用 useEffect
+  const [greeting, setGreeting] = useState('');
+  useEffect(() => {
+    setGreeting(Math.random() > 0.5 ? '你好' : 'Hello');
+  }, []);
+}
+
+// ❌ 原因2：第三方库在服务端和客户端渲染不同
+// 某些库内部使用了 window 或渲染了不同内容
+function Chart() {
+  return <SomeChartLib data={data} />;
+  // 如果 SomeChartLib 内部依赖浏览器 API，SSR 会出错
+}
+
+// ✅ 解决：动态导入 + ssr: false
+import dynamic from 'next/dynamic';
+const Chart = dynamic(() => import('some-chart-lib'), { ssr: false });
+
+// ❌ 原因3：条件渲染基于客户端状态
+function ThemeToggle() {
+  const [isDark, setIsDark] = useState(false);
+  // 服务端：isDark = false → 渲染 "☀️"
+  // 客户端：如果 localStorage 有保存的主题，可能 isDark 应该是 true
+  // 但 useState 初始值是 false → 渲染 "☀️"
+  // 然后 useEffect 读取 localStorage → setIsDark(true) → 重新渲染 "🌙"
+  // 虽然不一定会报 mismatch，但会导致页面闪烁
+}
+```
+
+```
+Hydration Mismatch 的根本原因：
+
+服务端渲染结果 ≠ 客户端首次渲染结果
+
+React 的 Hydration 要求两端"一模一样"，因为 React 要用 DOM diff 算法
+把客户端的虚拟 DOM 和服务端生成的真实 DOM 进行"对比"
+如果对比发现不一样，React 就不知道该信谁了
+
+解决思路：让服务端和客户端的"首次渲染"结果保持一致
+- 动态内容（时间、随机数）→ useEffect 延迟到客户端
+- 依赖浏览器的组件 → 动态导入 { ssr: false }
+- 不可避免的差异 → suppressHydrationWarning（最后手段）
+```
+
+#### 陷阱三：useEffect 在 SSR 中的行为
+
+```typescript
+// useEffect 在 SSR 中的行为非常重要：
+
+function MyComponent() {
+  console.log('1. 组件执行');
+
+  useEffect(() => {
+    console.log('2. useEffect 执行（仅客户端）');
+    return () => {
+      console.log('3. useEffect 清理函数');
+    };
+  }, []);
+
+  console.log('4. 组件执行结束');
+  return <div>Hello</div>;
+}
+
+// 服务端执行顺序：
+// 1. 组件执行
+// 4. 组件执行结束
+// （useEffect 完全不执行！）
+
+// 客户端执行顺序（Hydration）：
+// 1. 组件执行
+// 4. 组件执行结束
+// （先完成 Hydration，确保 DOM 一致）
+// 2. useEffect 执行
+// （Hydration 完成后才执行 useEffect）
+
+// 这意味着：
+// ✅ 可以放心在 useEffect 中使用 window/document
+// ✅ useEffect 不会影响服务端渲染的 HTML
+// ⚠️ 但 useEffect 中的内容不会出现在 SSR 的 HTML 中
+```
+
+💡 **大白话**：`useEffect` 就像是**家具送到后的安装服务**——服务端只负责"把家具摆到位置上"（生成 HTML），`useEffect` 是客户签收后才来的"安装师傅"（绑定事件、启动定时器等）。
+
+#### 陷阱四：代码分割 + SSR 的结合原理
+
+```
+代码分割（Code Splitting）在 SSR 中是如何工作的？
+
+没有代码分割的 SSR：
+  服务器返回一个大大的 HTML + 一个巨大的 JS bundle
+  用户必须下载所有 JS 才能交互
+  → 首屏加载慢
+
+有代码分割的 SSR：
+  服务器返回 HTML + 多个小的 JS chunk
+  浏览器只下载当前页面需要的 JS
+  其他页面的 JS 按需加载
+
+SSR + Code Splitting 的流程：
+
+  服务器渲染                              客户端
+  │                                       │
+  │ 解析组件依赖树                          │
+  │       ↓                               │
+  │ 识别需要哪些 JS chunk                   │
+  │ （哪些是 Server Component，哪些是 Client Component）│
+  │       ↓                               │
+  │ 渲染 HTML                              │
+  │ 在 HTML 中注入 <script> 标签            │
+  │ 指向需要的 JS chunk                    │
+  │       ↓                               │
+  │ 发送 HTML + chunk 清单 ───────────────> │
+  │                                       │ 渲染 HTML
+  │                                       │       ↓
+  │                                       │ 并行下载所有需要的 chunk
+  │                                       │       ↓
+  │                                       │ Hydration
+  │                                       │       ↓
+  │                                       │ 用户导航到其他页面时
+  │                                       │ 按需加载对应的 chunk
+```
+
+```typescript
+// Next.js 中的代码分割：
+
+// 1. 自动代码分割（Next.js 默认行为）
+// 每个页面自动分割成独立的 chunk
+// src/app/page.tsx → 自动生成 chunk
+// src/app/about/page.tsx → 自动生成 chunk
+
+// 2. 动态导入（手动控制分割）
+import dynamic from 'next/dynamic';
+
+// HeavyChart 是一个很大的图表库，只在用户需要时加载
+const HeavyChart = dynamic(() => import('../components/HeavyChart'), {
+  loading: () => <div>图表加载中...</div>,  // 加载时显示的内容
+  ssr: false,  // 可选：禁用服务端渲染
+});
+
+function Dashboard() {
+  return (
+    <div>
+      <h1>数据面板</h1>
+      {/* HeavyChart 的 JS 只有在 Dashboard 渲染时才下载 */}
+      <HeavyChart data={chartData} />
+    </div>
+  );
+}
+
+// 3. next/dynamic 在 SSR 中的工作原理：
+// 服务端：渲染 loading fallback 的 HTML
+// 客户端：Hydration 完成后，开始加载动态组件的 JS
+// 加载完成后：替换 fallback，显示真正的组件
+```
+
+---
+
 ## 📝 练习任务
 
 ### 练习 1（基础）：创建个人博客

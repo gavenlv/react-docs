@@ -1521,6 +1521,1397 @@ function VirtualizedDataTable({ columns, data }) {
 - [react-window文档](https://github.com/bvaughn/react-window)
 - [Vite构建优化指南](https://vitejs.dev/guide/build.html)
 
+## 🏋️ 性能极限优化实战案例
+
+### 1. 从 3 秒到 1 秒：首屏加载优化完整案例
+
+#### 用 Lighthouse 评估当前状态
+
+```
+🏎️ 优化前基线评估：
+
+  Lighthouse Performance 评分：42/100（差）
+
+  ┌─────────────────────────────────────────────────────┐
+  │  指标                  数值       评分               │
+  │  ─────────────────────────────────────               │
+  │  FCP                   3.2s       🔴 差              │
+  │  LCP                   5.8s       🔴 差              │
+  │  TBT                   1200ms     🔴 差              │
+  │  CLS                   0.32       🔴 差              │
+  │  Speed Index           4.5s       🔴 差              │
+  │                                                     │
+  │  📦 JS 总体积: 1.2MB (gzip: 380KB)                  │
+  │  🖼️ 图片总体积: 2.8MB                               │
+  │  📋 DOM 节点数: 1850                                 │
+  │  🔗 网络请求数: 48                                   │
+  └─────────────────────────────────────────────────────┘
+```
+
+#### 分析瀑布流请求图
+
+```
+Network 瀑布流分析（优化前）：
+
+  时间 →  0ms     500ms    1000ms   1500ms   2000ms   3000ms
+         ├────────┼────────┼────────┼────────┼────────┤
+  HTML    ████████                                        (HTML 下载+解析)
+  JS      ░░░░░░░░████████████████████                    (JS 下载 1.2MB)
+  CSS     ░░░░░░░░░░░░████████                            (CSS 下载 85KB)
+  Font    ░░░░░░░░░░░░░░░░░░░░████████████               (字体 150KB)
+  API     ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░████████████████ (API 等待 JS 执行)
+  Image   ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░████████ (图片最后才加载)
+
+  问题分析：
+  1. JS 太大（1.2MB），阻塞了 HTML 解析和首屏渲染
+  2. 字体加载太晚，导致 FOUT（文字闪烁）
+  3. API 请求被 JS 执行延迟
+  4. 关键图片没有预加载，LCP 很高
+```
+
+#### 逐步优化与量化对比
+
+```
+🔧 Step 1：代码分割（React.lazy + Suspense）
+
+  操作：
+  • 路由级别分割：Home / Dashboard / Settings / Admin
+  • 第三方库分割：图表库 / 富文本编辑器 / 日期选择器
+
+  效果：
+  ┌─────────────────────────────────────────────────┐
+  │  指标        优化前      Step 1      改善       │
+  │  JS 体积     1.2MB      350KB       ⬇ 71%     │
+  │  FCP         3.2s       2.1s        ⬇ 34%     │
+  │  LCP         5.8s       4.2s        ⬇ 28%     │
+  │  TBT         1200ms     600ms       ⬇ 50%     │
+  │  Lighthouse  42         58          ⬆ 16分    │
+  └─────────────────────────────────────────────────┘
+```
+
+```
+🔧 Step 2：图片优化
+
+  操作：
+  • PNG → WebP（体积减少 60-70%）
+  • 添加 width/height 属性防止 CLS
+  • 关键图片设置 fetchPriority="high"
+  • 非首屏图片设置 loading="lazy"
+
+  效果：
+  ┌─────────────────────────────────────────────────┐
+  │  指标        Step 1      Step 2      改善       │
+  │  图片体积    2.8MB      680KB       ⬇ 76%     │
+  │  LCP         4.2s       2.8s        ⬇ 33%     │
+  │  CLS         0.32       0.12        ⬇ 63%     │
+  │  Lighthouse  58         72          ⬆ 14分    │
+  └─────────────────────────────────────────────────┘
+```
+
+```
+🔧 Step 3：关键 CSS 内联 + 字体优化
+
+  操作：
+  • 首屏关键 CSS 内联到 HTML <head> 中
+  • 非关键 CSS 异步加载
+  • 字体 preconnect + font-display: swap
+
+  效果：
+  ┌─────────────────────────────────────────────────┐
+  │  指标        Step 2      Step 3      改善       │
+  │  FCP         2.1s       1.4s        ⬇ 33%     │
+  │  LCP         2.8s       2.2s        ⬇ 21%     │
+  │  CLS         0.12       0.04        ⬇ 67%     │
+  │  Lighthouse  72         84          ⬆ 12分    │
+  └─────────────────────────────────────────────────┘
+```
+
+```
+🔧 Step 4：预加载关键资源
+
+  操作：
+  • <link rel="preload"> 首屏图片
+  • <link rel="preconnect"> API 域名
+  • <link rel="dns-prefetch"> 第三方域名
+  • Link hover 时预加载下一页 chunk
+
+  效果：
+  ┌─────────────────────────────────────────────────┐
+  │  指标        Step 3      Step 4      改善       │
+  │  FCP         1.4s       1.1s        ⬇ 21%     │
+  │  LCP         2.2s       1.6s        ⬇ 27%     │
+  │  TBT         350ms      200ms       ⬇ 43%     │
+  │  Lighthouse  84         92          ⬆ 8分     │
+  └─────────────────────────────────────────────────┘
+```
+
+```
+🔧 Step 5：SSR / SSG（可选，视架构而定）
+
+  操作：
+  • 首页使用 SSG（静态生成）
+  • 列表页使用 ISR（增量静态再生成）
+  • 详情页使用 SSR
+
+  最终效果：
+  ┌─────────────────────────────────────────────────────┐
+  │  指标        初始基线    最终优化     总改善          │
+  │  ─────────────────────────────────────────────       │
+  │  FCP         3.2s        0.8s        ⬇ 75%          │
+  │  LCP         5.8s        1.3s        ⬇ 78%          │
+  │  TBT         1200ms      80ms        ⬇ 93%          │
+  │  CLS         0.32        0.02        ⬇ 94%          │
+  │  Speed Index 4.5s        1.1s        ⬇ 76%          │
+  │  Lighthouse  42          97          ⬆ 55分         │
+  │  JS 体积     1.2MB       180KB       ⬇ 85%          │
+  └─────────────────────────────────────────────────────┘
+  🎉 从 3 秒到 1 秒以内，Lighthouse 从 42 分提升到 97 分
+```
+
+---
+
+### 2. 复杂表单性能优化实战
+
+#### 场景：100+ 字段的大型表单
+
+```
+❌ 优化前的问题：
+
+  function HugeForm({ onSubmit }) {
+    // 100+ 个 useState！
+    const [field1, setField1] = useState('');
+    const [field2, setField2] = useState('');
+    // ... 98 more ...
+    const [field100, setField100] = useState('');
+
+    // 任何字段变化 → 整个组件重渲染
+    // 包括 100 个输入框、验证提示、提交按钮等
+    // 渲染时间: 45ms (超过 16ms，会掉帧！)
+
+    return (
+      <form>
+        <input value={field1} onChange={e => setField1(e.target.value)} />
+        {/* ... 98 more inputs ... */}
+        <button onSubmit={handleSubmit}>提交</button>
+      </form>
+    );
+  }
+
+  输入延迟: 150-200ms（打字明显卡顿）
+```
+
+#### 字段级 memo 和分区渲染
+
+```jsx
+// ✅ 优化方案一：分区渲染 + React.memo
+
+// 每个表单分区独立管理自己的状态
+const PersonalInfoSection = memo(function PersonalInfoSection({ data, onChange }) {
+  return (
+    <fieldset>
+      <legend>个人信息</legend>
+      <FormInput label="姓名" value={data.name}
+        onChange={val => onChange('name', val)} />
+      <FormInput label="电话" value={data.phone}
+        onChange={val => onChange('phone', val)} />
+      <FormInput label="邮箱" value={data.email}
+        onChange={val => onChange('email', val)} />
+    </fieldset>
+  );
+});
+
+const WorkInfoSection = memo(function WorkInfoSection({ data, onChange }) {
+  return (
+    <fieldset>
+      <legend>工作信息</legend>
+      <FormInput label="公司" value={data.company}
+        onChange={val => onChange('company', val)} />
+      <FormInput label="职位" value={data.position}
+        onChange={val => onChange('position', val)} />
+    </fieldset>
+  );
+});
+
+// 每个输入框用 memo 包裹
+const FormInput = memo(function FormInput({ label, value, onChange }) {
+  // console.log(`渲染: ${label}`); // 验证只有当前字段重渲染
+  return (
+    <div style={{ marginBottom: 8 }}>
+      <label>{label}</label>
+      <input
+        value={value}
+        onChange={e => onChange(e.target.value)}
+      />
+    </div>
+  );
+});
+```
+
+```
+📊 优化效果对比：
+
+  ┌─────────────────────────────────────────────────────┐
+  │  方案              每次输入渲染的组件数   渲染耗时   │
+  │  ─────────────────────────────────────────────       │
+  │  ❌ 单一组件       100+ 个              45ms       │
+  │  ✅ 分区 + memo     3 个（分区+输入框+表单）3ms     │
+  │                                                   │
+  │  输入延迟: 150ms → < 16ms  📈 响应速度提升 90%+    │
+  └─────────────────────────────────────────────────────┘
+```
+
+#### 虚拟化表单（只渲染可视区域的字段）
+
+```jsx
+// ✅ 优化方案二：表单字段虚拟化
+import { VariableSizeList as List } from 'react-window';
+
+function VirtualizedForm({ fields }) {
+  // 使用 useReducer 统一管理所有字段
+  const [formData, dispatch] = useReducer(formReducer, initialFormData);
+
+  // 每个字段的高度
+  const getItemSize = (index) => {
+    const field = fields[index];
+    if (field.type === 'textarea') return 120;
+    if (field.type === 'select') return 80;
+    return 60;  // 默认输入框高度
+  };
+
+  return (
+    <List
+      height={600}
+      itemCount={fields.length}
+      itemSize={getItemSize}
+      width="100%"
+    >
+      {({ index, style }) => (
+        <div style={style}>
+          <FormField
+            key={fields[index].name}
+            field={fields[index]}
+            value={formData[fields[index].name]}
+            onChange={(name, value) => dispatch({
+              type: 'UPDATE_FIELD',
+              payload: { name, value },
+            })}
+          />
+        </div>
+      )}
+    </List>
+  );
+}
+
+// 100 个字段只渲染约 10 个 DOM 节点
+// 渲染时间: 2ms，滚动完全流畅
+```
+
+#### 表单验证的防抖处理
+
+```jsx
+// ✅ 实时验证 + 防抖
+import { useMemo, useCallback } from 'react';
+import { debounce } from 'lodash-es';
+
+function useFormValidation(rules) {
+  const [errors, setErrors] = useState({});
+  const validateRef = useRef(null);
+
+  // 创建防抖验证函数（只在创建时生成一次）
+  if (!validateRef.current) {
+    validateRef.current = debounce((field, value, allRules) => {
+      const rule = allRules[field];
+      if (!rule) return;
+
+      // 执行验证逻辑
+      const error = rule.validate ? rule.validate(value) : null;
+      setErrors(prev => ({
+        ...prev,
+        [field]: error,
+      }));
+    }, 300);  // 用户停止输入 300ms 后验证
+  }
+
+  // 清理防抖函数
+  useEffect(() => {
+    return () => validateRef.current.cancel();
+  }, []);
+
+  const validateField = useCallback((field, value) => {
+    // 立即清除旧的错误（视觉反馈）
+    setErrors(prev => ({ ...prev, [field]: undefined }));
+    // 防抖执行实际验证
+    validateRef.current(field, value, rules);
+  }, [rules]);
+
+  return { errors, validateField };
+}
+
+// 优化前后对比：
+// 优化前：每次击键都执行验证 → 渲染 45ms
+// 优化后：防抖 300ms 后验证 → 渲染 2ms
+```
+
+#### 联动字段的优化
+
+```jsx
+// ✅ 联动字段优化：避免循环渲染
+
+function AddressForm() {
+  const [province, setProvince] = useState('');
+  const [city, setCity] = useState('');
+  const [district, setDistrict] = useState('');
+
+  // 城市列表依赖省份 —— 用 useMemo 缓存
+  const cities = useMemo(() => {
+    if (!province) return [];
+    return getCitiesByProvince(province);
+  }, [province]);
+
+  // 区县列表依赖城市 —— 用 useMemo 缓存
+  const districts = useMemo(() => {
+    if (!city) return [];
+    return getDistrictsByCity(city);
+  }, [city]);
+
+  // 省份变化时清空城市和区县
+  const handleProvinceChange = useCallback((value) => {
+    setProvince(value);
+    setCity('');       // 级联清空
+    setDistrict('');   // 级联清空
+  }, []);
+
+  // 城市变化时清空区县
+  const handleCityChange = useCallback((value) => {
+    setCity(value);
+    setDistrict('');   // 级联清空
+  }, []);
+
+  return (
+    <>
+      <Select value={province} onChange={handleProvinceChange}
+        options={provinces} />
+      <Select value={city} onChange={handleCityChange}
+        options={cities} disabled={!province} />
+      <Select value={district} onChange={setDistrict}
+        options={districts} disabled={!city} />
+    </>
+  );
+}
+```
+
+---
+
+### 3. 大数据表格性能优化
+
+#### 万级数据表格的渲染优化
+
+```
+❌ 优化前的问题：
+
+  function DataTable({ data }) {
+    // data 有 50000 条记录
+    return (
+      <table>
+        <tbody>
+          {data.map(row => (
+            <tr key={row.id}>
+              <td>{row.name}</td>
+              <td>{row.email}</td>
+              <td>{row.status}</td>
+              {/* ... 10 个列 ... */}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  }
+
+  问题：
+  • DOM 节点数: 50000 × 12 = 600,000 个节点 💀
+  • 首次渲染: 3000ms+
+  • 滚动: 5-10fps（几乎不可用）
+  • 内存占用: 800MB+
+```
+
+#### 虚拟滚动 + 固定列 + 排序/筛选
+
+```jsx
+// ✅ 完整的高性能数据表格
+import { useCallback, useMemo, useState } from 'react';
+import { useVirtual } from '@tanstack/react-virtual';
+
+function HighPerformanceTable({ data: rawData, columns }) {
+  const [sortKey, setSortKey] = useState(null);
+  const [sortDir, setSortDir] = useState('asc');
+  const [filterText, setFilterText] = useState('');
+  const parentRef = useRef(null);
+
+  // ⚡ 排序 + 筛选 — 用 useMemo 缓存
+  const processedData = useMemo(() => {
+    let result = rawData;
+
+    // 筛选
+    if (filterText) {
+      const keyword = filterText.toLowerCase();
+      result = result.filter(row =>
+        columns.some(col =>
+          String(row[col.key]).toLowerCase().includes(keyword)
+        )
+      );
+    }
+
+    // 排序
+    if (sortKey) {
+      result = [...result].sort((a, b) => {
+        const va = a[sortKey], vb = b[sortKey];
+        if (va < vb) return sortDir === 'asc' ? -1 : 1;
+        if (va > vb) return sortDir === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return result;
+  }, [rawData, filterText, sortKey, sortDir, columns]);
+
+  // ⚡ 虚拟滚动
+  const rowVirtualizer = useVirtual({
+    size: processedData.length,
+    parentRef,
+    estimateSize: useCallback(() => 48, []),  // 每行高度 48px
+    overscan: 10,  // 上下各多渲染 10 行作为缓冲
+  });
+
+  // 排序回调
+  const handleSort = useCallback((key) => {
+    setSortKey(prev => {
+      if (prev === key) {
+        setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+        return key;
+      }
+      setSortDir('asc');
+      return key;
+    });
+  }, []);
+
+  // 筛选防抖
+  const handleFilter = useMemo(
+    () => debounce(e => setFilterText(e.target.value), 200),
+    []
+  );
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* 工具栏 */}
+      <div style={{ padding: 8, borderBottom: '1px solid #eee' }}>
+        <input placeholder="搜索..." onChange={handleFilter} />
+      </div>
+
+      {/* 表头（固定） */}
+      <div style={{ display: 'flex', height: 40, fontWeight: 'bold' }}>
+        {columns.map(col => (
+          <div key={col.key} style={{ flex: 1, padding: '0 12px' }}
+            onClick={() => handleSort(col.key)}>
+            {col.title}
+            {sortKey === col.key && (sortDir === 'asc' ? ' ↑' : ' ↓')}
+          </div>
+        ))}
+      </div>
+
+      {/* 虚拟滚动列表 */}
+      <div ref={parentRef}
+        style={{ flex: 1, overflow: 'auto' }}>
+        <div style={{
+          height: rowVirtualizer.totalSize,
+          width: '100%',
+          position: 'relative',
+        }}>
+          {rowVirtualizer.virtualItems.map(virtualRow => {
+            const row = processedData[virtualRow.index];
+            return (
+              <div
+                key={virtualRow.key}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: virtualRow.size,
+                  transform: `translateY(${virtualRow.start}px)`,
+                }}
+              >
+                <div style={{ display: 'flex', height: 48, alignItems: 'center' }}>
+                  {columns.map(col => (
+                    <div key={col.key} style={{ flex: 1, padding: '0 12px' }}>
+                      {col.render ? col.render(row[col.key], row) : row[col.key]}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 底部信息 */}
+      <div style={{ padding: '8px 12px', borderTop: '1px solid #eee' }}>
+        共 {processedData.length} 条记录
+      </div>
+    </div>
+  );
+}
+```
+
+#### Web Worker 处理大数据计算
+
+```javascript
+// worker.js — 在 Web Worker 中处理排序/筛选/计算
+self.onmessage = function(e) {
+  const { type, data, sortKey, sortDir, filterText, columns } = e.data;
+
+  let result = data;
+
+  if (type === 'process') {
+    // 筛选
+    if (filterText) {
+      const keyword = filterText.toLowerCase();
+      result = result.filter(row =>
+        columns.some(col =>
+          String(row[col.key]).toLowerCase().includes(keyword)
+        )
+      );
+    }
+
+    // 排序（大数据用 TypedArray 优化）
+    if (sortKey) {
+      result = result.slice().sort((a, b) => {
+        const va = a[sortKey], vb = b[sortKey];
+        if (va < vb) return sortDir === 'asc' ? -1 : 1;
+        if (va > vb) return sortDir === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    // 返回处理后的数据
+    self.postMessage({ type: 'result', data: result });
+  }
+};
+```
+
+```jsx
+// 在 React 中使用 Web Worker
+function useWorkerProcessor(workerUrl) {
+  const workerRef = useRef(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  useEffect(() => {
+    workerRef.current = new Worker(workerUrl);
+    return () => workerRef.current?.terminate();
+  }, [workerUrl]);
+
+  const process = useCallback((data, options) => {
+    return new Promise((resolve) => {
+      setIsProcessing(true);
+      workerRef.current.onmessage = (e) => {
+        if (e.data.type === 'result') {
+          setIsProcessing(false);
+          resolve(e.data.data);
+        }
+      };
+      workerRef.current.postMessage({ type: 'process', data, ...options });
+    });
+  }, []);
+
+  return { process, isProcessing };
+}
+```
+
+#### 分页 vs 无限滚动 vs 虚拟列表的选型
+
+```
+📊 三种方案对比：
+
+  ┌─────────────────────────────────────────────────────────────┐
+  │  特性            分页        无限滚动      虚拟列表         │
+  │  ─────────────────────────────────────────────────────      │
+  │  DOM 节点数       ~50          ~200         ~30             │
+  │  内存占用         低           中（累积）     低（按需）     │
+  │  滚动性能         ⭐⭐⭐⭐⭐    ⭐⭐⭐        ⭐⭐⭐⭐⭐      │
+  │  数据定位         容易（页码）  困难          困难           │
+  │  SEO 友好         ✅           ❌            ❌              │
+  │  跳转到特定行     ✅ 页码跳转  ❌            ❌              │
+  │  总数据量感知     ✅（总页数）  ❌            ❌              │
+  │  实现复杂度       低           中            高              │
+  │  适用场景         后台管理      社交 Feed     大数据表格     │
+  │                  报表          商品列表      日志查看器     │
+  └─────────────────────────────────────────────────────────────┘
+
+  💡 选型建议：
+  • 数据 < 1000 条 → 直接渲染，无需特殊优化
+  • 数据 1000-10000 条 → 分页或虚拟列表
+  • 数据 > 10000 条 → 虚拟列表（必须）
+  • 用户需要"浏览全部" → 无限滚动
+  • 用户需要"精确定位" → 分页 + 搜索
+```
+
+---
+
+### 4. 动画性能优化实战
+
+#### 60fps 动画的基本要求
+
+```
+🎯 60fps 意味着什么？
+
+  每帧预算 = 1000ms / 60fps = 16.67ms
+
+  在这 16.67ms 内浏览器需要完成：
+  ┌────────────────────────────────────────────┐
+  │  JavaScript 执行    │    ≤ 10ms            │
+  │  样式计算            │    ≤ 2ms             │
+  │  布局计算            │    ≤ 2ms             │
+  │  绘制                │    ≤ 2ms             │
+  │  合成                │    ≤ 0.67ms          │
+  │  ───────────────────────────────────────    │
+  │  总计                │    ≤ 16.67ms         │
+  └────────────────────────────────────────────┘
+
+  ⚠️ 如果 JS 执行超过 10ms，就无法维持 60fps
+  ⚠️ 如果触发 Layout（回流），整个流程重新开始
+```
+
+#### will-change 的正确使用
+
+```css
+/* ✅ 正确用法：在动画即将开始前设置 */
+.animate-in {
+  will-change: transform, opacity;
+  animation: slideIn 0.3s ease-out forwards;
+}
+
+/* ❌ 错误用法 1：滥用在静态元素上 */
+.static-card {
+  will-change: transform;  /* 没有动画，白白浪费内存！ */
+}
+
+/* ❌ 错误用法 2：用在太多元素上 */
+.list-item:nth-child(n) {
+  will-change: transform;  /* 1000 个元素 = 1000 个 GPU 图层！ */
+}
+
+/* ✅ 动态添加和移除 */
+.modal-enter {
+  will-change: transform, opacity;
+}
+.modal-enter-active {
+  transform: translateX(0);
+  opacity: 1;
+}
+.modal-enter-done {
+  will-change: auto;  /* 动画结束后移除！ */
+}
+```
+
+```
+⚠️ will-change 使用规则：
+
+  1. 不要把它当作性能优化的"万能药"
+  2. 只在确实有动画/过渡的元素上使用
+  3. 动画结束后及时移除（will-change: auto）
+  4. 不要同时给超过 10 个元素添加
+  5. 使用它做"预告"——在动画开始前 100-200ms 添加
+
+  优化前后对比：
+  ┌──────────────────────────────────────────────┐
+  │  场景              FPS                        │
+  │  ❌ 无 will-change   30-40fps（有时卡顿）     │
+  │  ✅ 正确使用          55-60fps（流畅）         │
+  │  ❌ 滥用（100+元素）  15-25fps（更卡了！）     │
+  └──────────────────────────────────────────────┘
+```
+
+#### GPU 加速原理（transform / opacity）
+
+```
+🖥️ GPU 加速原理：
+
+  浏览器的合成层模型：
+
+  不使用 GPU 加速：
+  ┌─────────────────────────────────────────────┐
+  │  每次动画帧都需要：                           │
+  │  Layout → Paint → Composite                   │
+  │  （全部在 CPU 上完成，很慢）                   │
+  │                                              │
+  │  修改 left/top → Layout → Paint → Composite  │
+  │  修改 width/height → Layout → Paint → Composite│
+  └─────────────────────────────────────────────┘
+
+  使用 GPU 加速（transform / opacity）：
+  ┌─────────────────────────────────────────────┐
+  │  元素被提升为独立的合成层（GPU 图层）         │
+  │                                              │
+  │  只需要：Composite（在 GPU 上完成，极快）     │
+  │                                              │
+  │  修改 transform → 只 Composite ✅             │
+  │  修改 opacity → 只 Composite ✅               │
+  └─────────────────────────────────────────────┘
+
+  💡 为什么 transform/opacity 这么快？
+  • 它们不影响文档流（不会触发 Layout）
+  • 它们有自己的合成层（不触发 Paint）
+  • GPU 天生擅长矩阵变换和透明度混合
+```
+
+#### 用 Chrome DevTools 检测动画帧率
+
+```
+📈 检测动画帧率的方法：
+
+  方法 1：Performance 面板的 FPS 图表
+  ┌─────────────────────────────────────────────┐
+  │  Performance → 录制动画 → 查看 FPS 图表      │
+  │                                              │
+  │  FPS ────                                    │
+  │  60 ├████████████████████████████████████    │
+  │  45 ├                                 ████  │
+  │  30 ├                              ██████   │
+  │   0 └──────────────────────────────────      │
+  │      时间 ──────────────────────────────→    │
+  │                                              │
+  │  ⚠️ 绿色 = 60fps（流畅）                     │
+  │  🟡 黄色 = 30-59fps（可感知的卡顿）           │
+  │  🔴 红色 = < 30fps（严重卡顿）               │
+  └─────────────────────────────────────────────┘
+
+  方法 2：Rendering 面板中的 Frame Rendering Stats
+  ┌─────────────────────────────────────────────┐
+  │  DevTools → ⋮ → More tools → Rendering      │
+  │  勾选 "Frame Rendering Stats"                │
+  │  页面右上角会显示实时 FPS                     │
+  └─────────────────────────────────────────────┘
+
+  方法 3：JavaScript 精确测量
+  ┌─────────────────────────────────────────────┐
+  │  let lastTime = performance.now();           │
+  │  let frameCount = 0;                         │
+  │  function measureFPS() {                     │
+  │    frameCount++;                             │
+  │    const now = performance.now();            │
+  │    if (now - lastTime >= 1000) {             │
+  │      console.log(`FPS: ${frameCount}`);      │
+  │      frameCount = 0;                         │
+  │      lastTime = now;                         │
+  │    }                                         │
+  │    requestAnimationFrame(measureFPS);        │
+  │  }                                           │
+  └─────────────────────────────────────────────┘
+```
+
+#### React Spring / Framer Motion 的性能对比
+
+```
+📊 动画库性能对比：
+
+  测试场景：100 个列表项同时做入场动画
+
+  ┌─────────────────────────────────────────────────────┐
+  │  库                   包体积     FPS      首帧延迟    │
+  │  ─────────────────────────────────────────────       │
+  │  CSS Animation          0KB       60fps    0ms      │
+  │  Framer Motion         30KB       58fps    5ms      │
+  │  React Spring          25KB       56fps    8ms      │
+  │  GSAP (React)          25KB       60fps    2ms      │
+  │  原生 requestAnimFrame  0KB       60fps    1ms      │
+  └─────────────────────────────────────────────────────┘
+
+  💡 选型建议：
+  • 简单入场/退出 → CSS Animation / Framer Motion
+  • 物理弹簧效果 → React Spring
+  • 复杂时间线动画 → GSAP
+  • 追求极致性能 → CSS Animation + GPU 属性
+```
+
+#### 列表动画的批量优化
+
+```jsx
+// ❌ 优化前：每个列表项独立动画
+// 100 个项目 = 100 个独立的 CSS transition
+function BadListAnimation({ items }) {
+  return items.map((item, index) => (
+    <motion.div
+      key={item.id}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+    >
+      {item.text}
+    </motion.div>
+  ));
+}
+// 结果：500ms 后最后一个元素才开始动画，体验差
+
+// ✅ 优化后：FLIP 动画技术
+function OptimizedListAnimation({ items }) {
+  const listRef = useRef(null);
+
+  useEffect(() => {
+    // FLIP: First, Last, Invert, Play
+    const items = listRef.current.children;
+    const firstRects = Array.from(items).map(el =>
+      el.getBoundingClientRect()
+    );
+
+    // 触发 DOM 变化后...
+    requestAnimationFrame(() => {
+      Array.from(items).forEach((el, i) => {
+        const lastRect = el.getBoundingClientRect();
+        const deltaX = firstRects[i].left - lastRect.left;
+        const deltaY = firstRects[i].top - lastRect.top;
+
+        // Invert
+        el.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+        el.style.transition = 'none';
+
+        // Play
+        requestAnimationFrame(() => {
+          el.style.transition = 'transform 300ms ease-out';
+          el.style.transform = '';
+        });
+      });
+    });
+  }, [items]);
+
+  return (
+    <div ref={listRef}>
+      {items.map(item => (
+        <div key={item.id}>{item.text}</div>
+      ))}
+    </div>
+  );
+}
+
+// ✅ 更简单的方案：CSS 动画 + stagger
+// 一次性设置 CSS，让浏览器批量处理
+function CSSListAnimation({ items }) {
+  return (
+    <div className="list-container">
+      {items.map((item, index) => (
+        <div
+          key={item.id}
+          className="list-item"
+          style={{
+            animation: 'fadeIn 0.3s ease-out forwards',
+            animationDelay: `${Math.min(index, 10) * 30}ms`,  // 最多延迟 300ms
+          }}
+        >
+          {item.text}
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+---
+
+### 5. 内存优化实战
+
+#### React 组件卸载时的清理
+
+```jsx
+// ✅ 完整的资源清理检查清单
+
+function ResourceHeavyComponent({ apiUrl, userId }) {
+  const subscriptionRef = useRef(null);
+  const timerRef = useRef(null);
+  const observerRef = useRef(null);
+
+  useEffect(() => {
+    // 1. 事件监听器
+    const handleResize = () => { /* ... */ };
+    const handleScroll = () => { /* ... */ };
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('scroll', handleScroll);
+
+    // 2. 定时器
+    timerRef.current = setInterval(() => { /* ... */ }, 5000);
+
+    // 3. WebSocket / SSE 订阅
+    const ws = new WebSocket('wss://api.example.com/realtime');
+    ws.onmessage = (e) => { /* ... */ };
+
+    // 4. Intersection Observer
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => { /* ... */ });
+    });
+    observerRef.current = observer;
+
+    // 5. AbortController（取消网络请求）
+    const controller = new AbortController();
+
+    async function fetchData() {
+      const res = await fetch(apiUrl, { signal: controller.signal });
+      const data = await res.json();
+      /* ... */
+    }
+    fetchData();
+
+    // 🧹 统一清理（一个 return 搞定所有）
+    return () => {
+      // 清理事件监听器
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('scroll', handleScroll);
+
+      // 清理定时器
+      if (timerRef.current) clearInterval(timerRef.current);
+
+      // 关闭 WebSocket
+      if (ws.readyState === WebSocket.OPEN) ws.close();
+
+      // 断开 Observer
+      observer.disconnect();
+
+      // 取消网络请求
+      controller.abort();
+    };
+  }, [apiUrl, userId]);
+
+  return <div>内容</div>;
+}
+```
+
+#### 事件监听器泄漏的检测和修复
+
+```jsx
+// 🔍 检测工具：开发环境自动检测未清理的监听器
+function useDebugEventListeners() {
+  if (process.env.NODE_ENV !== 'development') return;
+
+  useEffect(() => {
+    // 覆写 addEventListener 记录调用栈
+    const originalAdd = EventTarget.prototype.addEventListener;
+    const listeners = new Map();
+
+    EventTarget.prototype.addEventListener = function(type, listener, options) {
+      if (!listeners.has(this)) listeners.set(this, []);
+      listeners.get(this).push({
+        type, listener, stack: new Error().stack,
+      });
+      return originalAdd.call(this, type, listener, options);
+    };
+
+    // 在控制台输出所有监听器
+    window.__debugListeners = () => {
+      console.table(
+        Array.from(listeners.entries()).flatMap(([target, list]) =>
+          list.map(l => ({
+            target: target.constructor.name,
+            type: l.type,
+            stack: l.stack?.split('\n')[2],
+          }))
+        )
+      );
+    };
+
+    return () => {
+      EventTarget.prototype.addEventListener = originalAdd;
+    };
+  }, []);
+}
+```
+
+#### 大列表数据的清理策略
+
+```jsx
+// ✅ 分页 + 内存回收策略
+function LargeDataGrid({ fetchUrl }) {
+  const [pages, setPages] = useState({});
+  const [currentPage, setCurrentPage] = useState(0);
+  const MAX_CACHED_PAGES = 3;  // 最多缓存 3 页数据
+
+  const loadPage = useCallback(async (page) => {
+    if (pages[page]) return;  // 已缓存
+
+    const res = await fetch(`${fetchUrl}?page=${page}&size=100`);
+    const data = await res.json();
+
+    setPages(prev => {
+      const next = { ...prev, [page]: data };
+      // 如果缓存页数超过上限，清理最早的页面
+      const pageKeys = Object.keys(next).map(Number).sort((a, b) => a - b);
+      while (pageKeys.length > MAX_CACHED_PAGES) {
+        const oldestPage = pageKeys.shift();
+        delete next[oldestPage];  // 释放不再需要的数据引用
+      }
+      return next;
+    });
+  }, [fetchUrl, pages]);
+
+  useEffect(() => {
+    loadPage(currentPage);
+    // 预加载相邻页
+    loadPage(currentPage + 1);
+  }, [currentPage, loadPage]);
+
+  return (
+    <div>
+      <Table data={pages[currentPage] || []} />
+      <Pagination current={currentPage} onChange={setCurrentPage} />
+    </div>
+  );
+}
+```
+
+#### Chrome Memory 面板使用教程
+
+```
+🧠 Chrome Memory 面板使用指南：
+
+  面板 1：Heap Snapshot（堆快照）
+  ┌─────────────────────────────────────────────────────┐
+  │  用途：拍摄某个时刻的内存快照，分析对象分布         │
+  │                                                     │
+  │  操作步骤：                                         │
+  │  ① 打开 Memory → 选择 "Heap snapshot"               │
+  │  ② 点击 "Take snapshot" → 等待完成                   │
+  │  ③ 查看 Summary 视图（按构造函数分组）              │
+  │  ④ 点击 "Comparison" 对比两次快照                   │
+  │                                                     │
+  │  关键列说明：                                       │
+  │  • Constructor — 对象类型                           │
+  │  • Distance — 到 GC Root 的距离                     │
+  │  • Shallow Size — 对象自身大小                      │
+  │  • Retained Size — 对象及其引用的所有对象大小        │
+  │                                                     │
+  │  🔍 重点排查：                                      │
+  │  • Detached DOM tree — 已从 DOM 移除但仍被 JS 引用  │
+  │  • (closure) — 闭包持有的变量                       │
+  │  • (array) — 数组持有的元素                         │
+  │  • (string) — 重复的字符串                          │
+  └─────────────────────────────────────────────────────┘
+
+  面板 2：Allocation Timeline（分配时间线）
+  ┌─────────────────────────────────────────────────────┐
+  │  用途：录制一段时间内的内存分配情况                   │
+  │                                                     │
+  │  操作步骤：                                         │
+  │  ① 选择 "Allocation instrumentation on timeline"     │
+  │  ② 点击 Record → 执行操作 → Stop                    │
+  │  ③ 查看蓝色柱状图（每次分配）                       │
+  │  ④ 向上拖动蓝色区域，过滤特定时间段的分配           │
+  │                                                     │
+  │  💡 找持续增长的构造函数                            │
+  │  如果某个函数的蓝色柱在持续变高                     │
+  │  → 说明每次操作都在创建新对象，没有释放              │
+  └─────────────────────────────────────────────────────┘
+
+  面板 3：Allocation Sampling（采样分配）
+  ┌─────────────────────────────────────────────────────┐
+  │  用途：低开销地采样 JS 函数的内存分配               │
+  │                                                     │
+  │  适合长时间录制的场景（开销比 Timeline 小得多）      │
+  │  可以快速定位哪些函数分配了最多内存                 │
+  └─────────────────────────────────────────────────────┘
+
+  排查内存泄漏的标准流程：
+  ┌─────────────────────────────────────────────────────┐
+  │  1. 取 Snapshot #1（基准）                          │
+  │  2. 执行操作（打开弹窗、切换 Tab、滚动列表）        │
+  │  3. 回到初始状态（关闭弹窗、切回 Tab）              │
+  │  4. 取 Snapshot #2                                  │
+  │  5. 重复步骤 2-4 两次，取 Snapshot #3、#4           │
+  │  6. 对比 #1 和 #4（Comparison 视图）               │
+  │  7. 找到 Delta（增长量）最大的对象                  │
+  │  8. 检查 Retainers（谁持有了这个引用）              │
+  └─────────────────────────────────────────────────────┘
+```
+
+#### WeakRef / FinalizationRegistry 的高级应用
+
+```jsx
+// ✅ 使用 WeakRef 实现自动清理的缓存
+
+class AutoCleanCache {
+  constructor() {
+    this.cache = new Map();
+    this.registry = new FinalizationRegistry((key) => {
+      // 当 key 对象被 GC 回收时，自动清除缓存
+      this.cache.delete(key);
+      console.log(`[Cache] 自动清理了 key: ${key}`);
+    });
+  }
+
+  get(keyObj) {
+    const weakRef = this.cache.get(keyObj);
+    if (!weakRef) return undefined;
+
+    const value = weakRef.deref();
+    if (value === undefined) {
+      // WeakRef 的目标已被 GC 回收
+      this.cache.delete(keyObj);
+      return undefined;
+    }
+    return value;
+  }
+
+  set(keyObj, value) {
+    const weakRef = new WeakRef(value);
+    this.cache.set(keyObj, weakRef);
+
+    // 注册回调：当 keyObj 被 GC 时自动清理
+    this.registry.register(keyObj, keyObj, keyObj);
+  }
+
+  clear() {
+    this.cache.clear();
+    this.registry.unregister?.();
+  }
+}
+
+// 使用场景：组件级缓存，组件卸载后自动释放
+function useComponentCache() {
+  const cacheRef = useRef(null);
+
+  if (!cacheRef.current) {
+    cacheRef.current = new AutoCleanCache();
+  }
+
+  return cacheRef.current;
+}
+
+// 在列表项中使用
+function ListItem({ item }) {
+  const cache = useComponentCache();
+
+  const cachedResult = cache.get(item);
+  const result = cachedResult ?? expensiveCompute(item);
+
+  if (!cachedResult) {
+    cache.set(item, result);
+  }
+
+  return <div>{result}</div>;
+}
+// 💡 当 item 对象不再被引用时，缓存自动释放
+// 💡 不会造成内存泄漏
+```
+
+---
+
+### 6. 服务端性能优化
+
+#### SSR 缓存策略
+
+```javascript
+// ✅ Next.js 中实现 SSR 缓存
+
+// 方案 1：使用 unstable_cache（App Router）
+import { unstable_cache } from 'next/cache';
+
+async function getProductList() {
+  const data = unstable_cache(
+    async () => {
+      const res = await fetch('https://api.example.com/products', {
+        next: { revalidate: 300 },  // 缓存 5 分钟
+      });
+      return res.json();
+    },
+    ['product-list'],           // 缓存 key
+    { revalidate: 300, tags: ['products'] }  // 重新验证设置
+  );
+  return data;
+}
+
+// 方案 2：自定义内存缓存
+const ssrCache = new Map();
+const CACHE_TTL = 5 * 60 * 1000;  // 5 分钟
+
+async function cachedFetch(url, options = {}) {
+  const cacheKey = `${url}:${JSON.stringify(options)}`;
+  const cached = ssrCache.get(cacheKey);
+
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data;  // 命中缓存
+  }
+
+  const data = await fetch(url, options).then(r => r.json());
+  ssrCache.set(cacheKey, { data, timestamp: Date.now() });
+  return data;
+}
+```
+
+#### ISR（增量静态再生成）配置
+
+```javascript
+// ✅ Next.js ISR 配置
+// pages/products/[id].js
+
+export async function getStaticProps({ params }) {
+  const product = await fetch(
+    `https://api.example.com/products/${params.id}`
+  ).then(r => r.json());
+
+  return {
+    props: { product },
+    // 增量再生成：首次请求后，最多 60 秒更新一次
+    revalidate: 60,
+  };
+}
+
+// 生成静态页面时预先生成热门产品
+export async function getStaticPaths() {
+  const popularProducts = await fetch(
+    'https://api.example.com/products/popular'
+  ).then(r => r.json());
+
+  return {
+    paths: popularProducts.map(p => ({ params: { id: p.id } })),
+    fallback: 'blocking',  // 未预生成的页面在请求时生成
+  };
+}
+```
+
+```
+📊 ISR 性能对比：
+
+  ┌─────────────────────────────────────────────────────┐
+  │  方案          首次请求    后续请求    数据新鲜度     │
+  │  ─────────────────────────────────────────────       │
+  │  纯 SSR        500-2000ms  500-2000ms  ✅ 实时       │
+  │  纯 SSG        50ms        50ms        ❌ 构建时固定 │
+  │  ISR 60s       50-500ms    50ms        ⚠️ 最多延迟60s│
+  │  ISR on-demand 50ms        50ms        ✅ 按需更新   │
+  └─────────────────────────────────────────────────────┘
+
+  💡 ISR 的优势：
+  • 首次请求返回缓存的静态页面（极快）
+  • 后台重新生成页面（数据保持新鲜）
+  • 用户不需要等待服务端渲染
+```
+
+#### Edge Computing 在 React 中的应用
+
+```
+🌍 Edge Computing（边缘计算）：
+
+  传统架构：
+  ┌─────────────────────────────────────────────────────┐
+  │  用户（北京）→ 美国服务器（200ms 延迟）→ 返回页面    │
+  │  用户（上海）→ 美国服务器（250ms 延迟）→ 返回页面    │
+  │  用户（广州）→ 美国服务器（220ms 延迟）→ 返回页面    │
+  └─────────────────────────────────────────────────────┘
+
+  Edge 架构：
+  ┌─────────────────────────────────────────────────────┐
+  │  用户（北京）→ 北京 Edge 节点（5ms）→ 返回页面       │
+  │  用户（上海）→ 上海 Edge 节点（3ms）→ 返回页面       │
+  │  用户（广州）→ 广州 Edge 节点（4ms）→ 返回页面       │
+  └─────────────────────────────────────────────────────┘
+
+  React 中的 Edge 方案：
+  ┌─────────────────────────────────────────────────────┐
+  │  框架           Edge 支持            配置方式         │
+  │  ─────────────────────────────────────────────       │
+  │  Next.js        Edge Runtime        export const     │
+  │                                     runtime='edge'  │
+  │  Vite           Vercel Edge         vercel.json      │
+  │  Remix          Cloudflare Workers  wrangler.toml    │
+  │  Astro          多种 Edge           astro.config     │
+  └─────────────────────────────────────────────────────┘
+```
+
+```javascript
+// Next.js Edge Runtime 示例
+// app/api/hello/route.js
+
+export const runtime = 'edge';
+
+export async function GET(request) {
+  // 在 Edge 节点上执行
+  const url = new URL(request.url);
+  const country = request.headers.get('x-vercel-ip-country');
+
+  return new Response(JSON.stringify({
+    message: `Hello from Edge!`,
+    country,
+    timestamp: Date.now(),
+  }), {
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+```
+
+#### CDN 缓存策略
+
+```
+📦 CDN 缓存层次：
+
+  ┌─────────────────────────────────────────────────────┐
+  │                                                     │
+  │  浏览器缓存 ──→ CDN 边缘缓存 ──→ 源服务器           │
+  │  (本地)        (全球分布)        (原始数据)          │
+  │                                                     │
+  │  缓存命中顺序：                                     │
+  │  1. 浏览器本地缓存（最快，0ms）                     │
+  │  2. CDN 边缘节点缓存（快，5-20ms）                 │
+  │  3. 源服务器（慢，100-500ms）                       │
+  │                                                     │
+  └─────────────────────────────────────────────────────┘
+
+  缓存策略配置：
+  ┌─────────────────────────────────────────────────────┐
+  │  资源类型         Cache-Control              max-age  │
+  │  ─────────────────────────────────────────────       │
+  │  HTML             no-cache                    0       │
+  │  JS/CSS（带hash） immutable                  365天    │
+  │  图片             public, max-age=31536000   365天    │
+  │  API 数据         s-maxage=60, stale-while-  60s+    │
+  │                   revalidate=86400                    │
+  │  字体             public, max-age=31536000   365天    │
+  └─────────────────────────────────────────────────────┘
+```
+
+#### API 响应缓存（Cache-Control / ETag）
+
+```javascript
+// ✅ 服务端 API 缓存策略
+
+// 1. Cache-Control：控制缓存行为
+app.get('/api/products', (req, res) => {
+  res.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=86400');
+  // s-maxage=60: CDN 缓存 60 秒
+  // stale-while-revalidate=86400: 60 秒后返回旧数据，后台更新
+  // 效果：用户始终能快速拿到响应
+
+  res.json(products);
+});
+
+// 2. ETag：条件请求，避免重复传输
+app.get('/api/user/:id', async (req, res) => {
+  const user = await getUser(req.params.id);
+
+  // 生成 ETag（基于内容的哈希）
+  const etag = crypto
+    .createHash('md5')
+    .update(JSON.stringify(user))
+    .digest('hex');
+
+  // 检查 If-None-Match 头
+  if (req.headers['if-none-match'] === etag) {
+    return res.status(304).end();  // 内容未变，不传输数据
+  }
+
+  res.set('ETag', etag);
+  res.json(user);
+});
+
+// 优化前后对比：
+// 优化前：每次请求传输 5KB JSON，200ms
+// 优化后：304 响应只传 200B，50ms
+// 📈 带宽节省 96%，延迟降低 75%
+```
+
 ---
 
 [← 15 - 性能优化](../15-performance-optimization/) | [→ 22 - React动画](../22-animation/)

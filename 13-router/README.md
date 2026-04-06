@@ -879,4 +879,620 @@ function AdminLayout() {
 
 ---
 
+## 🔬 React Router 的底层原理
+
+### 1. 前端路由的本质
+
+#### Hash 路由 vs History 路由的原理
+
+两种路由模式的核心区别在于**如何让浏览器"记住"页面变化但不刷新**：
+
+```
+Hash 路由（# 模式）：
+┌──────────────────────────────────────────────┐
+│  URL: https://example.com/#/about            │
+│                              ^^^^^^^         │
+│                              hash 部分        │
+│                                               │
+│  浏览器行为：                                  │
+│  1. hash 变化 → 浏览器不发送请求到服务器       │
+│  2. 触发 hashchange 事件                       │
+│  3. JS 监听事件 → 匹配路径 → 渲染组件         │
+│                                               │
+│  特点：服务器完全不知道 # 后面是什么           │
+└──────────────────────────────────────────────┘
+
+History 路由（pushState 模式）：
+┌──────────────────────────────────────────────┐
+│  URL: https://example.com/about               │
+│                          ^^^^^               │
+│                          正常路径              │
+│                                               │
+│  浏览器行为：                                  │
+│  1. JS 调用 pushState → URL 变了但没刷新      │
+│  2. 需要自己监听 popstate 事件（前进/后退）   │
+│  3. 点击链接需要 preventDefault + pushState    │
+│                                               │
+│  特点：URL 干净美观，但需要服务器配合           │
+└──────────────────────────────────────────────┘
+```
+
+> 💡 **大白话**：Hash 路由就像在信封上贴了张便签——邮局（服务器）不看便签内容。History 路由就像直接改了收件人地址——需要邮局也知道这个新地址存在（服务器配置 fallback）。
+
+#### window.history API 详解
+
+History API 是前端路由的基石，它提供了 3 个关键方法和 1 个事件：
+
+```javascript
+// ====== pushState：添加一条新的历史记录 ======
+// 就像在浏览器历史记录里"插入"了一页
+history.pushState(state, title, url);
+
+// 参数说明：
+// state: 可以附带数据（容量约 5MB），目标页面可以通过 history.state 读取
+// title: 目前大多数浏览器忽略这个参数（留空字符串即可）
+// url: 新的 URL（必须同源）
+
+// 实际使用示例：
+history.pushState({ from: 'home' }, '', '/about');
+// URL 变成 /about，页面不刷新
+// 后续可以通过 history.state.from 获取 'home'
+
+// ====== replaceState：替换当前历史记录 ======
+// 就像把当前这一页"涂改"了，不会新增记录
+history.replaceState(state, title, url);
+
+// 使用场景：登录成功后，把 /login 替换为 /dashboard
+// 这样用户按后退不会回到登录页
+history.replaceState(null, '', '/dashboard');
+
+// ====== popstate 事件：监听浏览器前进/后退 ======
+// ⚠️ 注意：pushState 和 replaceState 不会触发 popstate！
+// 只有用户点击浏览器的前进/后退按钮才会触发
+
+window.addEventListener('popstate', (event) => {
+  console.log('用户点了前进/后退');
+  console.log('附带的数据:', event.state);
+  // 在这里根据新的 location.pathname 渲染对应组件
+});
+
+// ====== 其他相关 API ======
+history.back();      // 等价于点击浏览器后退按钮
+history.forward();   // 等价于点击浏览器前进按钮
+history.go(-2);      // 后退两步
+history.length;      // 历史记录中的条目数
+```
+
+> ⚠️ **关键陷阱**：`pushState` 和 `replaceState` **不会触发 `popstate` 事件**！所以 React Router 需要自己封装一层，在调用 `pushState` 后手动触发路由匹配。
+
+```
+URL 变化触发的完整事件链：
+
+用户点击 <Link to="/about">:
+  → React Router 拦截点击事件（preventDefault）
+  → 调用 history.pushState(null, '', '/about')
+  → React Router 手动更新内部 state
+  → React 重新渲染，匹配 /about 对应的组件
+
+用户点击浏览器后退按钮:
+  → 浏览器触发 popstate 事件
+  → React Router 监听到事件
+  → React Router 读取新的 location.pathname
+  → React 重新渲染，匹配对应组件
+```
+
+#### 为什么需要 history 对象？
+
+浏览器的 `window.history` API 有两个缺陷：
+1. **事件不完整**：`pushState` 不触发事件，只能监听前进/后退
+2. **没有"变化监听"**：无法知道 `pushState` 何时被调用
+
+React Router 内部使用了一个增强版的 history 对象来解决这个问题：
+
+```javascript
+// 简化版 history 对象——React Router 的核心
+function createBrowserHistory() {
+  const listeners = [];  // 存储所有订阅者
+
+  function listen(listener) {
+    listeners.push(listener);
+    // 返回取消订阅的函数
+    return () => {
+      const index = listeners.indexOf(listener);
+      listeners.splice(index, 1);
+    };
+  }
+
+  function push(path, state) {
+    window.history.pushState(state, '', path);
+    // 关键：手动通知所有订阅者！
+    listeners.forEach(listener => listener({ action: 'PUSH', location: { pathname: path } }));
+  }
+
+  function replace(path, state) {
+    window.history.replaceState(state, '', path);
+    listeners.forEach(listener => listener({ action: 'REPLACE', location: { pathname: path } }));
+  }
+
+  // 监听浏览器前进/后退
+  window.addEventListener('popstate', () => {
+    listeners.forEach(listener => listener({
+      action: 'POP',
+      location: { pathname: window.location.pathname }
+    }));
+  });
+
+  return {
+    push,
+    replace,
+    listen,
+    location: { pathname: window.location.pathname }
+  };
+}
+```
+
+> 💡 **大白话**：原生 `history` 就像一个没有门的信箱——你可以往里面塞信（`pushState`），但信箱不会告诉你"有新信来了"。React Router 的 history 对象就像给信箱装了个"新邮件提醒"——每次有信来，都会通知所有订阅者。
+
+#### 用原生代码实现一个最小路由（约 30 行代码）
+
+```javascript
+// ====== 一个真正能跑的最小路由器 ======
+function createRouter(routes) {
+  const routeMap = {};  // 路径 → 组件的映射表
+
+  // 注册路由
+  routes.forEach(({ path, component }) => {
+    routeMap[path] = component;
+  });
+
+  // 路由匹配函数
+  function match() {
+    const pathname = window.location.pathname;
+    // 精确匹配
+    if (routeMap[pathname]) return routeMap[pathname];
+    // 动态参数匹配（如 /users/:id）
+    for (const [pattern, component] of Object.entries(routeMap)) {
+      const paramNames = [];
+      const regexStr = pattern.replace(/:([^/]+)/g, (_, name) => {
+        paramNames.push(name);
+        return '([^/]+)';
+      });
+      const match = pathname.match(new RegExp(`^${regexStr}$`));
+      if (match) {
+        const params = {};
+        paramNames.forEach((name, i) => params[name] = match[i + 1]);
+        return { component, params };
+      }
+    }
+    return routeMap['*'] || routeMap['/404'];  // 404 兜底
+  }
+
+  // 导航函数
+  function navigate(path) {
+    window.history.pushState({}, '', path);
+    render();  // 导航后手动触发渲染
+  }
+
+  // 渲染函数
+  function render() {
+    const result = match();
+    const app = document.getElementById('app');
+    if (typeof result === 'function') {
+      app.innerHTML = result();  // 简单起见，直接用 innerHTML
+    } else if (result && result.component) {
+      app.innerHTML = result.component(result.params);
+    }
+  }
+
+  // 监听前进/后退
+  window.addEventListener('popstate', render);
+
+  return { navigate, render };
+}
+
+// ====== 使用示例 ======
+const router = createRouter([
+  { path: '/', component: () => '<h1>首页</h1>' },
+  { path: '/about', component: () => '<h1>关于我们</h1>' },
+  { path: '/users/:id', component: (params) => `<h1>用户 ${params.id}</h1>` },
+  { path: '*', component: () => '<h1>404 - 页面不存在</h1>' },
+]);
+
+// 首次渲染
+router.render();
+
+// 导航到 /about
+router.navigate('/about');
+```
+
+> 💡 这 30 行代码揭示了前端路由的本质：**URL 匹配 + history.pushState + DOM 替换**。React Router 在此基础上增加了组件化、嵌套路由、数据预加载等能力，但核心原理完全一样。
+
+---
+
+### 2. React Router 的架构设计
+
+#### BrowserRouter 如何监听 URL 变化
+
+`BrowserRouter` 内部的核心工作流程：
+
+```
+BrowserRouter 初始化：
+  1. 创建 history 对象（增强版 window.history）
+  2. 监听 history 变化
+  3. 将 location 信息存入内部 state
+  4. 通过 Context 向下传递 location 和 navigate
+
+URL 变化时（用户点击 Link 或浏览器前进/后退）：
+  ┌─────────────────────────────────────────────────┐
+  │  Link 点击 / navigate() 调用                     │
+  │    ↓                                             │
+  │  history.push('/about')                          │
+  │    ↓                                             │
+  │  history 对象通知所有 listener                   │
+  │    ↓                                             │
+  │  BrowserRouter 内部 setState({ location: newLoc })│
+  │    ↓                                             │
+  │  RouterContext.Provider 的 value 更新             │
+  │    ↓                                             │
+  │  Routes 组件重新渲染                             │
+  │    ↓                                             │
+  │  执行路由匹配算法                                │
+  │    ↓                                             │
+  │  找到匹配的 Route → 渲染对应组件                  │
+  └─────────────────────────────────────────────────┘
+```
+
+简化实现：
+
+```jsx
+// BrowserRouter 的简化版核心逻辑
+function BrowserRouter({ children }) {
+  const [location, setLocation] = useState({
+    pathname: window.location.pathname,
+    search: window.location.search,
+    hash: window.location.hash,
+  });
+
+  useEffect(() => {
+    // 创建增强版 history
+    const history = createBrowserHistory();
+
+    // 订阅 URL 变化
+    const unsubscribe = history.listen(({ location: newLoc }) => {
+      setLocation(newLoc);  // 触发 React 重新渲染
+    });
+
+    return unsubscribe;  // 清理订阅
+  }, []);
+
+  // 通过 Context 向下传递路由信息
+  return (
+    <RouterContext.Provider value={{
+      location,
+      navigate: (path) => history.push(path),
+      // ... 其他路由 API
+    }}>
+      {children}
+    </RouterContext.Provider>
+  );
+}
+```
+
+#### Routes/Route 的匹配算法原理
+
+React Router v6 使用了**基于路径排名的匹配算法**（取代了 v5 的简单遍历）：
+
+```
+路由定义：
+  /users          → 排名分数: 0
+  /users/:id      → 排名分数: 2（动态段 +1）
+  /users/new      → 排名分数: 1（静态段优先）
+  /:category/:id  → 排名分数: 3（两个动态段）
+
+匹配 URL /users/123 时的排序结果：
+  1. /users/:id    → 匹配 ✅（分数 2）
+  2. /:category/:id → 匹配 ✅（分数 3，但排名更靠后）
+  3. /users        → 不匹配 ❌
+  4. /users/new    → 不匹配 ❌
+
+结果：选择 /users/:id（分数最低 = 最具体 = 最高优先级）
+```
+
+> 💡 **大白话**：React Router 的匹配就像"最精确匹配优先"。当你搜索联系人时，输入"张三"会优先匹配名叫"张三"的人，而不是所有姓"张"的人。静态路径比动态路径更"精确"。
+
+```javascript
+// 简化的路由匹配算法
+function matchRoute(routePath, urlPath) {
+  const routeSegments = routePath.split('/').filter(Boolean);
+  const urlSegments = urlPath.split('/').filter(Boolean);
+
+  if (routeSegments.length !== urlSegments.length) return null;
+
+  const params = {};
+
+  for (let i = 0; i < routeSegments.length; i++) {
+    const routeSeg = routeSegments[i];
+    const urlSeg = urlSegments[i];
+
+    if (routeSeg.startsWith(':')) {
+      // 动态参数：/users/:id
+      params[routeSeg.slice(1)] = urlSeg;
+    } else if (routeSeg === '*') {
+      // 通配符
+      params['*'] = urlSegments.slice(i).join('/');
+      return { matched: true, params };
+    } else if (routeSeg !== urlSeg) {
+      // 静态路径不匹配
+      return null;
+    }
+  }
+
+  return { matched: true, params };
+}
+
+// 示例
+matchRoute('/users/:id', '/users/123');
+// → { matched: true, params: { id: '123' } }
+
+matchRoute('/users/:id', '/posts/456');
+// → null（静态部分 'users' ≠ 'posts'）
+```
+
+#### 路由嵌套的 Outlet 原理
+
+`Outlet` 是实现嵌套路由的关键。它的原理其实就是一个**"插槽"模式**：
+
+```
+组件树结构：
+
+<Routes>
+  <Route path="/admin" element={<AdminLayout />}>
+    <Route path="users" element={<UsersPage />} />
+    <Route path="settings" element={<SettingsPage />} />
+  </Route>
+</Routes>
+
+当 URL = /admin/users 时，组件树变成：
+
+<AdminLayout>
+  <Outlet /> → 渲染 <UsersPage />
+</AdminLayout>
+
+React Router 内部做了什么？
+┌─────────────────────────────────────────┐
+│  Routes 遍历嵌套路由配置                 │
+│    ↓                                     │
+│  匹配到 /admin/users                     │
+│    ↓                                     │
+│  渲染 AdminLayout（父路由的 element）    │
+│    ↓                                     │
+│  同时将 UsersPage 存入 RouterContext     │
+│    ↓                                     │
+│  AdminLayout 中的 <Outlet /> 读取 Context │
+│    ↓                                     │
+│  <Outlet /> 渲染出 <UsersPage />        │
+└─────────────────────────────────────────┘
+```
+
+简化实现：
+
+```jsx
+// Outlet 的简化实现
+function Outlet() {
+  // 从 RouterContext 获取当前匹配的嵌套路由组件
+  const outletContext = useContext(OutletContext);
+  return outletContext.element || null;
+}
+
+// Routes 的简化实现
+function Routes({ children }) {
+  const location = useContext(LocationContext);
+
+  // 将 Route 配置扁平化
+  const routes = flattenRoutes(children);
+
+  // 找到匹配的路由（包括嵌套路由）
+  const matches = matchRoutes(routes, location.pathname);
+  // matches 可能是：[
+  //   { route: '/admin', element: <AdminLayout /> },
+  //   { route: '/admin/users', element: <UsersPage /> }  // 嵌套的
+  // ]
+
+  // 渲染匹配的路由链
+  let element = null;
+  // 从最内层开始包装
+  for (let i = matches.length - 1; i >= 0; i--) {
+    if (i === matches.length - 1) {
+      // 最内层：直接渲染组件
+      element = matches[i].element;
+    } else {
+      // 外层：用 OutletContext 包裹
+      element = (
+        <OutletContext.Provider value={{ element }}>
+          {matches[i].element}
+        </OutletContext.Provider>
+      );
+    }
+  }
+
+  return element;
+}
+```
+
+> 💡 **大白话**：`Outlet` 就像俄罗斯套娃——AdminLayout 是外面的大娃娃，UsersPage 是里面的小娃娃。`Outlet` 就是"大娃娃肚子里的空间"，用来放小娃娃。
+
+#### 路由懒加载（React.lazy + Suspense）的实现原理
+
+```jsx
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+```
+
+这行代码背后发生了什么？
+
+```
+懒加载的完整流程：
+
+1. 编译阶段（Webpack/Vite）：
+   import('./pages/Dashboard')
+   → Webpack 将 Dashboard 及其依赖打包成独立文件
+   → dashboard.[hash].js（约 50KB）
+
+2. 运行阶段：
+   lazy(() => import(...))
+   → 返回一个特殊的"懒组件"对象：
+   {
+     $$typeof: Symbol(react.lazy),
+     _payload: {
+       _status: 'pending',       // 初始状态
+       _result: Promise,          // 加载 Promise
+     },
+     _init: function() {
+       // 触发 import()，开始加载 JS 文件
+       this._payload._result = import('./pages/Dashboard');
+       this._payload._status = 'in_progress';
+     }
+   }
+
+3. 首次渲染：
+   <Dashboard /> → React 发现是 lazy 组件
+   → 调用 _init() 开始加载
+   → 抛出一个特殊 Promise 给 Suspense
+   → Suspense 捕获到 Promise，显示 fallback UI
+
+4. 加载完成：
+   Promise resolve → Dashboard 组件真正可用
+   → Suspense 隐藏 fallback，渲染 Dashboard
+
+5. 后续渲染：
+   Dashboard 已经加载过了
+   → 直接渲染，不再显示 fallback
+```
+
+```javascript
+// React.lazy 的简化实现
+function lazy(ctor) {
+  const payload = {
+    _status: -1,      // -1: 未开始, 0: 已完成, 1: 出错
+    _result: null,
+  };
+
+  const lazyType = {
+    $$typeof: Symbol(react.lazy),
+    _payload: payload,
+    _init: function() {
+      if (payload._status === -1) {
+        const promise = ctor();  // 调用 import()
+        promise.then(
+          (module) => {
+            payload._status = 0;
+            payload._result = module.default;  // 拿到导出的组件
+          },
+          (error) => {
+            payload._status = 1;
+            payload._result = error;
+          }
+        );
+        throw promise;  // 抛出给 Suspense 捕获
+      }
+      if (payload._status === 1) {
+        throw payload._result;  // 抛出错误
+      }
+      return payload._result;  // 返回已加载的组件
+    }
+  };
+
+  return lazyType;
+}
+```
+
+> 💡 **大白话**：`lazy` 就像网购了一件商品。第一次渲染时发现"货还没到"（组件代码没下载），于是先显示一个"加载中"的占位符（fallback）。等到货到了（代码下载完了），再把真正的东西拿出来展示。
+
+#### 路由守卫的实现模式
+
+React Router v6 没有内置的"路由守卫"概念，但可以通过组件组合实现：
+
+```jsx
+// ====== 模式 1：包装组件（最常用） ======
+function RequireAuth({ children }) {
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
+
+  if (!isAuthenticated) {
+    // 未登录 → 重定向到登录页，并记住原目标
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return children;
+}
+
+// 使用
+<Route path="/dashboard" element={
+  <RequireAuth><Dashboard /></RequireAuth>
+} />
+
+// ====== 模式 2：Layout 级守卫 ======
+function AuthLayout() {
+  const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
+
+  if (loading) return <LoadingSpinner />;
+  if (!isAuthenticated) return <Navigate to="/login" state={{ from: location }} />;
+
+  return (
+    <div>
+      <Sidebar />
+      <Outlet />  {/* 只有通过验证，子路由才能渲染 */}
+    </div>
+  );
+}
+
+<Route element={<AuthLayout />}>
+  <Route path="/dashboard" element={<Dashboard />} />
+  <Route path="/profile" element={<Profile />} />
+</Route>
+
+// ====== 模式 3：数据预加载守卫（loader） ======
+// React Router v6.4+ 的 loader 模式
+const router = createBrowserRouter([
+  {
+    path: '/admin',
+    element: <AdminLayout />,
+    loader: async () => {
+      // 在渲染前检查权限
+      const token = localStorage.getItem('token');
+      if (!token) throw redirect('/login');
+      // 预加载必要数据
+      const user = await fetchUser();
+      return { user };
+    },
+    children: [
+      { path: 'dashboard', element: <Dashboard /> },
+    ]
+  }
+]);
+```
+
+```
+路由守卫的执行时机：
+
+        用户访问 /dashboard
+              ↓
+    ┌─── RequireAuth 检查 ───┐
+    │                         │
+    │  已登录？               │
+    │  ├── 是 → 渲染子组件   │
+    │  └── 否 → Navigate 到  │
+    │         /login          │
+    │         (保存 from)     │
+    └─────────────────────────┘
+              ↓
+    登录成功后
+              ↓
+    Navigate 到 state.from（原目标页面）
+```
+
+> 💡 **大白话**：路由守卫就像大楼的门禁系统。你想进某个房间（访问某个路由），门禁先检查你的工牌（认证状态）。没有工牌就被带到前台（登录页），办好工牌后自动带你回到原来想去的房间。
+
+---
+
 [→ 14 - 状态管理进阶](../14-state-management/)

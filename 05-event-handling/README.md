@@ -655,4 +655,524 @@ function SearchBox() {
 
 ---
 
+## 🔬 React 合成事件系统的深层原理
+
+> 前面我们学会了如何使用 React 事件，现在让我们深入 React 事件系统的底层架构。理解这些原理，能帮你解决"事件为什么不触发"、"stopPropagation 为什么不起作用"等疑难问题。
+
+### 1. 合成事件（SyntheticEvent）的架构设计
+
+#### 为什么 React 不直接使用原生 DOM 事件？
+
+不同的浏览器对事件的实现存在很多差异，直接使用原生事件需要写大量兼容代码：
+
+```javascript
+// 不用 React 时，获取事件的兼容写法（头大）
+function handleClick(event) {
+  // 获取事件对象（IE 和现代浏览器不同）
+  event = event || window.event;
+  
+  // 获取目标元素
+  const target = event.target || event.srcElement;
+  
+  // 阻止默认行为
+  if (event.preventDefault) {
+    event.preventDefault();
+  } else {
+    event.returnValue = false;  // IE8
+  }
+  
+  // 阻止冒泡
+  if (event.stopPropagation) {
+    event.stopPropagation();
+  } else {
+    event.cancelBubble = true;  // IE
+  }
+}
+
+// 用 React 时，完全不需要关心兼容性
+function handleClick(event) {
+  event.preventDefault();     // 所有浏览器都一样
+  event.stopPropagation();    // 所有浏览器都一样
+  const target = event.target; // 统一的 API
+}
+```
+
+| 对比项 | 原生 DOM 事件 | React 合成事件 |
+|--------|-------------|---------------|
+| 跨浏览器 | ❌ 需要手动兼容 | ✅ 自动处理 |
+| API 统一 | ❌ IE 和 Chrome 接口不同 | ✅ 所有浏览器同一套 API |
+| 内存占用 | ❌ 每个元素绑定一个监听器 | ✅ 只有根节点有监听器 |
+| 事件移除 | ❌ 手动 `removeEventListener` | ✅ React 自动管理 |
+
+> 💡 **大白话**：原生 DOM 事件就像不同国家的插座——中国的、美国的、欧洲的都不一样，你的充电器（代码）得带一堆转换头。React 的合成事件就是"万能充电器"——不管到了哪个国家（浏览器），都能直接用。
+
+#### 合成事件的跨浏览器兼容原理
+
+```
+┌───────────────────────────────────────────────────┐
+│             合成事件的架构图                         │
+│                                                   │
+│  你写的代码                                        │
+│  ┌────────────────────┐                           │
+│  │ onClick={handler}  │                           │
+│  └────────┬───────────┘                           │
+│           │                                       │
+│           ▼                                       │
+│  ┌────────────────────┐                           │
+│  │ React SyntheticEvent│ ← 统一的事件接口           │
+│  │  .target            │                           │
+│  │  .preventDefault()  │                           │
+│  │  .stopPropagation() │                           │
+│  └────────┬───────────┘                           │
+│           │                                       │
+│     ┌─────┼─────┐                                 │
+│     ▼     ▼     ▼                                 │
+│  ┌────┐┌────┐┌────┐                               │
+│  │Chrome│Firefox│Safari│  ← 底层不同的原生事件       │
+│  └────┘└────┘└────┘                               │
+└───────────────────────────────────────────────────┘
+```
+
+SyntheticEvent 对象的关键属性：
+
+```javascript
+// React 合成事件对象的结构（简化版）
+{
+  // === 通用属性（所有浏览器都有）===
+  bubbles: true,              // 是否冒泡
+  cancelable: true,           // 是否可取消
+  currentTarget: null,        // 当前绑定的元素
+  defaultPrevented: false,    // 是否已阻止默认行为
+  eventPhase: 3,              // 事件阶段（1=捕获，2=目标，3=冒泡）
+  isTrusted: true,            // 是否由用户操作触发（非代码模拟）
+  target: button,             // 触发事件的元素
+  timeStamp: 1234567890,      // 事件发生的时间戳
+  type: 'click',              // 事件类型
+
+  // === 鼠标事件特有 ===
+  clientX: 100,
+  clientY: 200,
+  
+  // === 指向原生事件（紧急逃生通道）===
+  nativeEvent: MouseEvent { /* 原生事件对象 */ },
+  
+  // === 方法 ===
+  preventDefault() {},        // 阻止默认行为
+  stopPropagation() {},       // 阻止冒泡
+  isPropagationStopped() {},  // 检查是否已阻止冒泡
+  persist() {}                // React 16 中用于持久化事件对象
+}
+```
+
+#### 事件池（Event Pooling）机制（React 16）及其在 React 17+ 的变化
+
+**React 16 的事件池**：
+
+```jsx
+// React 16 中的事件池行为（可能让你踩坑！）
+function EventHandler() {
+  const handleClick = (e) => {
+    console.log(e.target);     // ✅ 同步访问 - 正常
+    
+    // ❌ 异步访问 - null！
+    setTimeout(() => {
+      console.log(e.target);   // 💥 null！事件对象被回收了！
+    }, 100);
+    
+    // ✅ 解决方案：调用 persist() 持久化
+    e.persist();
+    setTimeout(() => {
+      console.log(e.target);   // ✅ 可以访问了
+    }, 100);
+  };
+  
+  return <button onClick={handleClick}>点击</button>;
+}
+```
+
+```
+React 16 事件池原理：
+
+┌─────────────────────────────────────────┐
+│           事件池（Event Pool）           │
+│                                         │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐   │
+│  │ Event 1 │ │ Event 2 │ │ Event 3 │   │
+│  │ (空闲)  │ │ (空闲)  │ │ (使用中) │   │
+│  └─────────┘ └─────────┘ └─────────┘   │
+│                                         │
+│  事件触发时：从池中取出一个 Event 对象     │
+│  事件处理完后：清空属性，放回池中复用       │
+│                                         │
+│  💥 问题：异步回调时，Event 可能已被清空    │
+└─────────────────────────────────────────┘
+```
+
+**React 17+ 取消了事件池**：
+
+```jsx
+// React 17+：不再有事件池，所有事件对象都是普通对象
+function EventHandler() {
+  const handleClick = (e) => {
+    // ✅ 异步访问完全没问题
+    setTimeout(() => {
+      console.log(e.target);   // ✅ 正常！
+      console.log(e.type);     // ✅ 正常！
+    }, 100);
+    
+    // 不再需要 persist() 了（虽然调了也不会报错）
+  };
+  
+  return <button onClick={handleClick}>点击</button>;
+}
+```
+
+> 💡 **大白话**：React 16 的事件池就像"共享单车"——你骑完了（事件处理完了），车就被回收给下一个人用。如果你异步想再骑（异步访问事件对象），车已经没了。React 17 取消了这个机制，相当于"每辆单车只给你一个人用，不回收"——简单直接，不会出问题。
+
+---
+
+### 2. React 事件委托机制
+
+#### React 17 前后事件绑定的区别（root vs document）
+
+这是 React 17 最重要的变化之一：
+
+```
+React 16 及之前：
+┌─────────────────────────────────────────────────┐
+│ document                                        │
+│   ┌───────────────────────────────────────────┐ │
+│   │ #root                                     │ │
+│   │   ┌─────────────┐  ┌─────────────┐       │ │
+│   │   │ <button>    │  │ <input>     │       │ │
+│   │   └─────────────┘  └─────────────┘       │ │
+│   └───────────────────────────────────────────┘ │
+│                                                 │
+│  🔴 所有事件监听器绑定在 document 上              │
+│  document.addEventListener('click', handler)    │
+│  document.addEventListener('change', handler)   │
+│  document.addEventListener('keydown', handler)  │
+└─────────────────────────────────────────────────┘
+
+React 17+：
+┌─────────────────────────────────────────────────┐
+│ document                                        │
+│   ┌───────────────────────────────────────────┐ │
+│   │ #root                                     │ │
+│   │   ┌─────────────┐  ┌─────────────┐       │ │
+│   │   │ <button>    │  │ <input>     │       │ │
+│   │   └─────────────┘  └─────────────┘       │ │
+│   └───────────────────────────────────────────┘ │
+│                                                 │
+│  🟢 所有事件监听器绑定在 #root 上                 │
+│  root.addEventListener('click', handler)        │
+│  root.addEventListener('change', handler)       │
+│  root.addEventListener('keydown', handler)      │
+└─────────────────────────────────────────────────┘
+```
+
+```jsx
+// React 16 的事件绑定（内部原理，你不需要写这些）
+document.addEventListener('click', dispatchEvent);   // 所有 click
+document.addEventListener('change', dispatchEvent);  // 所有 change
+
+// React 17+ 的事件绑定
+const root = document.getElementById('root');
+root.addEventListener('click', dispatchEvent);
+root.addEventListener('change', dispatchEvent);
+```
+
+#### 为什么 React 要改变事件绑定位置？
+
+| 原因 | 说明 |
+|------|------|
+| **微前端兼容** | 多个 React 应用可以各自绑定在自己的 root 上，不会互相干扰 |
+| **更安全的事件边界** | 事件不会冒泡到 document，减少跨应用的影响 |
+| **未来兼容** | 为 React 未来的"离屏渲染"等功能做准备 |
+| **与其他库共存** | 使用 jQuery 等库绑定在 document 上的事件不会被 React 拦截 |
+
+> 💡 **大白话**：以前 React 把所有事件监听器都绑在"小区大门"（document）上，所有进出的人都要经过门卫。但如果有多个 React 应用（比如微前端），多个门卫在同一个大门上就会打架。现在 React 改为把门卫放在各自"单元门口"（root），互不干扰。
+
+#### 事件冒泡和捕获在 React 中的处理
+
+DOM 事件有三个阶段：捕获 → 目标 → 冒泡。React 也完整支持这三个阶段：
+
+```
+事件传播的三个阶段：
+
+   document
+      │
+      ▼ 捕获阶段（从外到内）
+   ┌────────┐
+   │  div   │ ← onClickCapture（React 的捕获事件）
+   │ ┌────┐ │
+   │ │ btn│ │ ← onClick（React 的冒泡事件）
+   │ └────┘ │
+   └────────┘
+      │
+      ▼ 冒泡阶段（从内到外）
+   document
+
+React 中对应的事件属性：
+  onClick         → 冒泡阶段（默认）
+  onClickCapture  → 捕获阶段
+  onMouseMove     → 冒泡阶段
+  onMouseMoveCapture → 捕获阶段
+```
+
+```jsx
+function EventPhaseDemo() {
+  return (
+    <div
+      onClick={() => console.log('② div 冒泡')}
+      onClickCapture={() => console.log('① div 捕获')}
+    >
+      <button
+        onClick={() => console.log('③ button 冒泡')}
+        onClickCapture={() => console.log('④ button 捕获')}
+      >
+        点击我
+      </button>
+    </div>
+  );
+}
+
+// 点击按钮后，输出顺序：
+// ① div 捕获    （外层先捕获）
+// ④ button 捕获  （内层后捕获）
+// ③ button 冒泡  （内层先冒泡）
+// ② div 冒泡    （外层后冒泡）
+```
+
+> 🔍 **记忆口诀**：**"洋葱模型"**——捕获是从外皮往里钻，冒泡是从内心往外冒。就像吃洋葱一样：先从外层剥进去（捕获），再从里面出来（冒泡）。
+
+#### 微前端场景下事件绑定的注意事项
+
+```jsx
+// 微前端场景：两个 React 应用共存在一个页面中
+
+// 应用 A（绑定在自己的 root 上）
+<div id="root-a">
+  <AppA />
+</div>
+
+// 应用 B（绑定在自己的 root 上）
+<div id="root-b">
+  <AppB />
+</div>
+
+// React 17+ 的好处：
+// AppA 的事件不会冒泡到 root-b
+// AppB 的事件不会冒泡到 root-a
+// 两个应用的事件系统完全独立，互不干扰
+
+// React 16 的痛点：
+// 两个应用的事件都绑在 document 上
+// AppA 中 stopPropagation 可能影响到 AppB
+// 很容易出现难以调试的事件冲突 Bug
+```
+
+---
+
+### 3. React 事件 vs 原生事件
+
+#### 混用时的执行顺序
+
+```jsx
+function MixedEvents() {
+  const buttonRef = useRef(null);
+  
+  useEffect(() => {
+    // 原生事件：直接绑定到 DOM 元素上
+    buttonRef.current.addEventListener('click', () => {
+      console.log('② 原生 DOM 事件');
+    });
+  }, []);
+  
+  // React 事件
+  const handleReactClick = () => {
+    console.log('③ React 合成事件');
+  };
+  
+  return (
+    // 注意：外层 div 同时有 React 事件和原生事件
+    <div
+      onClick={() => console.log('④ React 父元素事件')}
+      ref={(el) => {
+        if (el) {
+          el.addEventListener('click', () => {
+            console.log('① 原生父元素事件');
+          });
+        }
+      }}
+    >
+      <button
+        ref={buttonRef}
+        onClick={handleReactClick}
+      >
+        点击我
+      </button>
+    </div>
+  );
+}
+
+// 点击按钮后的执行顺序（React 17+）：
+// ① 原生父元素事件（捕获阶段）
+// ② 原生 DOM 事件（目标元素上的原生事件先执行）
+// ③ React 合成事件（冒泡阶段）
+// ④ React 父元素事件（冒泡到父元素）
+```
+
+> ⚠️ **关键规则**：**原生事件总是先于 React 事件执行**。因为原生事件绑定在真实的 DOM 节点上，而 React 事件是委托在 root 上的。当事件从目标元素冒泡到 root 的过程中，会先经过绑定了原生事件的元素。
+
+#### e.stopPropagation() 在 React 中的真实行为
+
+```jsx
+function StopPropagation() {
+  return (
+    <div onClick={() => console.log('外层 React 事件')}>
+      <div
+        ref={(el) => {
+          if (el) {
+            el.addEventListener('click', () => {
+              console.log('内层原生事件');
+            });
+          }
+        }}
+        onClick={(e) => {
+          e.stopPropagation();  // 只阻止 React 事件的冒泡
+          console.log('内层 React 事件');
+        }}
+      >
+        <button onClick={() => console.log('按钮 React 事件')}>
+          点击
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// 点击按钮后的输出：
+// 内层原生事件    ← 原生事件不受 React stopPropagation 影响！
+// 按钮 React 事件
+// 内层 React 事件
+// （外层 React 事件不会输出了 ✓）
+
+// 💡 e.stopPropagation() 只能阻止 React 合成事件的冒泡
+// 不能阻止原生 DOM 事件的传播！
+```
+
+```
+e.stopPropagation() 的作用范围图示：
+
+┌──────────────────────────────────────────────────┐
+│                                                  │
+│  原生 DOM 事件层                                  │
+│  ┌──────────────────────────────────────────────┐│
+│  │ 目标元素上的原生事件  ← 不受 React 控制       ││
+│  │                                              ││
+│  │ React 合成事件层                              ││
+│  │ ┌──────────────────────────────────────────┐ ││
+│  │ │ React 事件传播链                          │ ││
+│  │ │ button → div → root                      │ ││
+│  │ │        ↑                                  │ ││
+│  │ │  e.stopPropagation() 在这里截断            │ ││
+│  │ │  → 后续的 React 冒泡被阻止 ✓              │ ││
+│  │ └──────────────────────────────────────────┘ ││
+│  └──────────────────────────────────────────────┘│
+│                                                  │
+└──────────────────────────────────────────────────┘
+```
+
+#### e.nativeEvent 的作用
+
+`e.nativeEvent` 是合成事件对象上指向真实原生事件对象的引用：
+
+```jsx
+function NativeEventDemo({ handler }) {
+  const handleClick = (e) => {
+    // e 是 React 合成事件
+    console.log(e.type);           // 'click'
+    console.log(e.isTrusted);      // true（用户触发）
+    
+    // e.nativeEvent 是原生事件
+    console.log(e.nativeEvent);    // MouseEvent { ... }
+    console.log(e.nativeEvent instanceof MouseEvent);  // true
+    
+    // 💡 某些场景需要原生事件的特殊属性
+    // 比如获取鼠标在页面中的精确位置（考虑滚动偏移）
+    console.log(e.nativeEvent.pageX);
+    console.log(e.nativeEvent.pageY);
+    
+    // ⚠️ 如果需要同时阻止 React 事件和原生事件：
+    e.stopPropagation();                      // 阻止 React 事件冒泡
+    e.nativeEvent.stopImmediatePropagation();  // 阻止原生事件冒泡
+  };
+  
+  return <button onClick={handleClick}>点击</button>;
+}
+```
+
+#### 何时需要使用原生事件？
+
+| 场景 | 推荐方式 | 原因 |
+|------|---------|------|
+| 普通 UI 交互 | React 合成事件 | 跨浏览器兼容，自动管理生命周期 |
+| 全局键盘快捷键 | 原生事件（`document.addEventListener`） | 需要在组件外监听 |
+| 第三方库集成 | 原生事件 | 库可能不兼容 React 合成事件 |
+| 需要捕获阶段 + 原生行为 | 原生事件 + `addEventListener` 的第三个参数 `{ capture: true }` |
+| 窗口事件（resize、scroll） | 原生事件 + `useEffect` 清理 | 需要手动绑定和清理 |
+
+```jsx
+// 常见场景：全局键盘快捷键
+function GlobalShortcuts() {
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // 原生事件才能监听到 document 级别的事件
+      if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        console.log('Ctrl+S → 保存');
+      }
+      if (e.key === 'Escape') {
+        console.log('ESC → 关闭弹窗');
+      }
+    };
+    
+    // 绑定原生事件
+    document.addEventListener('keydown', handleKeyDown);
+    
+    // ⚠️ 清理！组件卸载时必须移除监听器
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+  
+  return <div>试试 Ctrl+S 或 ESC</div>;
+}
+
+// 常见场景：监听窗口大小变化
+function WindowSize() {
+  const [width, setWidth] = useState(window.innerWidth);
+  
+  useEffect(() => {
+    const handleResize = () => {
+      setWidth(window.innerWidth);
+    };
+    
+    // 原生事件监听 window
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+  
+  return <p>窗口宽度: {width}px</p>;
+}
+```
+
+> 💡 **总结口诀**：日常开发用 React 事件（简单省心），全局/窗口级别用原生事件（配合 `useEffect` 和清理函数）。记住一点：**用了原生事件一定要在组件卸载时清理**，否则会造成内存泄漏！
+
+---
+
 [→ 06 - 条件渲染](../06-conditional-rendering/)

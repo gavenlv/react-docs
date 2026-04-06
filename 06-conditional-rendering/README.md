@@ -634,6 +634,271 @@ function UserList() {
 
 ---
 
+## 🔬 条件渲染的底层原理与性能影响
+
+### 1. 条件渲染在虚拟 DOM 层面发生了什么？
+
+#### && 和三元表达式在 React Element 树上的区别
+
+当我们写条件渲染时，最终生成的是**虚拟 DOM 树（React Element 树）**。不同的条件渲染写法，在这棵树上的表现略有不同。
+
+> **大白话**：你可以把虚拟 DOM 树想象成一张"施工图纸"。React 拿着图纸和"旧图纸"对比，找出哪里需要修改，然后只修改那些地方。条件渲染就是决定这张图纸上要画什么。
+
+```jsx
+// && 运算符：条件为假时，返回的是 false/0/null 等"空值"
+function Example1({ isLoggedIn }) {
+  return (
+    <div>
+      {isLoggedIn && <UserProfile />}
+    </div>
+  );
+}
+// 当 isLoggedIn = false 时，React Element 树如下：
+// {
+//   type: 'div',
+//   props: { children: false }   // ← 注意这里是 false，不是 null 或 undefined
+// }
+// React 遇到 children 是 false 时，不会渲染任何东西
+
+// 三元运算符：条件为假时，你可以返回 null
+function Example2({ isLoggedIn }) {
+  return (
+    <div>
+      {isLoggedIn ? <UserProfile /> : null}
+    </div>
+  );
+}
+// 当 isLoggedIn = false 时，React Element 树如下：
+// {
+//   type: 'div',
+//   props: { children: null }    // ← 这里是 null
+// }
+// React 遇到 children 是 null 时，也不会渲染任何东西
+```
+
+🔍 **两者在虚拟 DOM 层面几乎没区别**。React 在渲染时，对 `false`、`null`、`undefined`、`true` 都会跳过，不生成真实的 DOM 节点。
+
+#### null/undefined/false 作为子元素时 React 如何处理
+
+React 有一套"忽略规则"，以下值作为子元素时**不会生成 DOM 节点**：
+
+| 值 | 是否渲染 | 说明 |
+|----|---------|------|
+| `null` | ❌ 不渲染 | 最常用的"空占位符" |
+| `undefined` | ❌ 不渲染 | 同 null |
+| `false` | ❌ 不渲染 | `&&` 运算符的常见结果 |
+| `true` | ❌ 不渲染 | `true && <Comp />` 的中间结果 |
+| `0` | ⚠️ **会渲染** | **陷阱！** 页面上会显示 "0" |
+| `""` (空字符串) | ❌ 不渲染 | React 会忽略空字符串 |
+| `NaN` | ⚠️ **会渲染** | 页面上会显示 "NaN" |
+
+> **类比**：想象 React 是一个快递分拣员。`null`、`false`、`undefined` 这些包裹上贴着"空件"标签，分拣员看到就直接扔掉。但 `0` 和 `NaN` 没有贴这个标签，分拣员会老老实实地把它们放到传送带上——于是用户就看到了页面上莫名出现的 "0"。
+
+#### 短路求值的陷阱：0 \|\| "默认值" 的问题
+
+```jsx
+function ItemCount({ count }) {
+  // ⚠️ 陷阱一：&& 遇到 0
+  // 当 count = 0 时：0 && <span>{count} 个</span>
+  // 结果是 0，而不是 false → React 渲染出 "0"
+  return <div>{count && <span>{count} 个</span>}</div>;
+
+  // ⚠️ 陷阱二：|| 的使用
+  // 当 count = 0 时：0 || "无商品"
+  // 0 是 falsy 值，所以 || 会返回 "无商品"
+  // 但 0 个商品和"没有商品"是不同的含义！
+  return <div>{count || "无商品"}</div>;
+  // count=0 → 显示 "无商品"（可能不是你想要的）
+
+  // ✅ 正确：用 ?? （空值合并运算符）
+  // ?? 只在 null 和 undefined 时才返回右侧
+  return <div>{count ?? "无数据"}</div>;
+  // count=0 → 显示 0
+  // count=null → 显示 "无数据"
+}
+```
+
+> 💡 **经验法则**：当你需要"默认值"时，优先用 `??` 而不是 `||`。`||` 会把 `0`、`""`、`false` 这些合法值也当作"空"。
+
+### 2. 条件渲染的性能影响
+
+#### 卸载/挂载 vs 显示/隐藏的性能对比
+
+条件渲染有两种核心策略，它们的性能特征完全不同：
+
+```
+策略一：条件渲染（卸载/挂载）
+┌──────────────────────────────────────────────┐
+│  isVisible = true    isVisible = false        │
+│  ┌──────────┐        ┌──────────┐            │
+│  │ 组件 A   │  ───→  │  (空)    │            │
+│  │ [有状态] │        │          │            │
+│  └──────────┘        └──────────┘            │
+│                                              │
+│  操作：卸载组件 A → 销毁 state → 移除 DOM     │
+│  切换回来：重新挂载 → 重新初始化 state         │
+│  代价：组件内部状态全部丢失 ❌                 │
+└──────────────────────────────────────────────┘
+
+策略二：CSS 隐藏（显示/隐藏）
+┌──────────────────────────────────────────────┐
+│  isVisible = true    isVisible = false        │
+│  ┌──────────┐        ┌──────────┐            │
+│  │ 组件 A   │        │ 组件 A   │            │
+│  │ [有状态] │        │ [有状态] │            │
+│  │ 可见     │        │ display: │            │
+│  └──────────┘        │  none    │            │
+│                      └──────────┘            │
+│  操作：只修改 CSS 属性，不触碰组件              │
+│  切换回来：瞬间恢复，状态完好无损               │
+│  代价：隐藏的组件仍占用内存 ✅ 但状态保留       │
+└──────────────────────────────────────────────┘
+```
+
+> **大白话**：条件渲染就像"关店后再开店"——每次都要重新装修、重新进货（重新初始化组件）。CSS 隐藏就像"拉下卷帘门"——店里的东西还在，拉开门就能继续营业。
+
+#### React DevTools Profiler 分析条件渲染的性能
+
+你可以用 React DevTools 的 **Profiler** 面板来直观看到条件渲染的开销：
+
+1. 安装 React DevTools 浏览器扩展
+2. 打开 Profiler 面板，点击录制按钮
+3. 触发条件切换操作
+4. 停止录制，查看火焰图
+
+在火焰图中你会看到：
+
+```
+条件渲染切换时的火焰图示意：
+
+// 卸载旧组件时
+┌─ App ─────────────────────────────┐
+│ ┌─ OldComponent ──────────────┐   │
+│ │   mount    ████ (首次挂载)   │   │
+│ │   update   ██   (更新)      │   │
+│ │   unmount  ██   (卸载清理)   │   │  ← 组件被销毁
+│ └──────────────────────────────┘   │
+│                                    │
+│ // 挂载新组件时                     │
+│ ┌─ NewComponent ───────────────┐   │
+│ │   mount    ██████ (首次挂载)  │   │  ← 新组件从零开始
+│ └──────────────────────────────┘   │
+└────────────────────────────────────┘
+```
+
+🔍 **重点观察**：
+- **Commit 阶段的时间**：DOM 操作花费的时间
+- **Render 阶段的时间**：虚拟 DOM 对比花费的时间
+- 如果组件很大（子树很深），挂载/卸载的开销会很明显
+
+#### 何时用 CSS display:none 代替条件渲染
+
+| 考量维度 | 条件渲染 | CSS 隐藏 |
+|---------|---------|---------|
+| **内存占用** | ✅ 更少（不存在的组件不占内存） | ❌ 更多（隐藏组件仍在内存中） |
+| **切换速度** | ❌ 较慢（需要挂载/卸载） | ✅ 极快（只改一个 CSS 属性） |
+| **状态保留** | ❌ 状态丢失 | ✅ 状态保留 |
+| **初始加载** | ✅ 更快（不需要渲染隐藏内容） | ❌ 更慢（隐藏内容也要渲染） |
+| **适用场景** | Tab 切换、权限控制、模态框 | 手风琴、频繁切换的面板 |
+
+> **决策建议**：
+> - 如果切换**不频繁**（如权限控制的菜单）→ 用**条件渲染**
+> - 如果切换**频繁**且需要**保留状态**（如手风琴组件）→ 用 **CSS 隐藏**
+> - 如果隐藏组件**很重**（包含大量子组件）→ 用**条件渲染**（节省内存）
+
+#### Key 在条件渲染中的作用（为什么切换两个组件会导致状态丢失）
+
+这是一个非常经典的"坑"：
+
+```jsx
+function Toggle() {
+  const [showA, setShowA] = useState(true);
+
+  return (
+    <div>
+      <button onClick={() => setShowA(!showA)}>切换</button>
+      {/* 问题：切换 A/B 时，输入框的内容会丢失！ */}
+      {showA ? <TextInput label="A" /> : <TextInput label="B" />}
+    </div>
+  );
+}
+
+function TextInput({ label }) {
+  const [text, setText] = useState('');
+  return (
+    <div>
+      <span>{label}: </span>
+      <input value={text} onChange={e => setText(e.target.value)} />
+    </div>
+  );
+}
+```
+
+**为什么会丢失状态？** 因为 React 在做 Diff 时发现：
+
+```
+切换前：
+<div>
+  <button>切换</button>
+  <TextInput label="A" />   ← 类型: TextInput, key: 无
+</div>
+
+切换后：
+<div>
+  <button>切换</button>
+  <TextInput label="B" />   ← 类型: TextInput, key: 无
+</div>
+
+React 的判断过程：
+1. <div> → 类型没变 → 复用
+2. <button> → 类型没变 → 复用
+3. <TextInput label="A"> vs <TextInput label="B">
+   → 类型相同（都是 TextInput）
+   → key 相同（都是 undefined）
+   → React 认为：这是"同一个组件"，只是 props 从 "A" 变成了 "B"
+   → 于是 React 复用了组件实例，但 label 从 "A" 变成 "B"
+   → state 保留了！等等...这里 state 是保留的！
+
+⚠️ 实际上上面的代码 state 是保留的。真正丢失状态的情况是：
+
+{showA ? <ComponentA /> : <ComponentB />}
+
+切换前：
+<div>
+  <ComponentA />    ← 类型: ComponentA
+</div>
+
+切换后：
+<div>
+  <ComponentB />    ← 类型: ComponentB
+</div>
+
+React 的判断：
+1. <ComponentA> vs <ComponentB>
+   → 类型不同！
+   → React 规则：不同类型 → 直接卸载旧的，挂载新的
+   → ComponentA 被完全销毁（state 清空）
+   → ComponentB 从零开始挂载（全新 state）
+   → 结果：状态丢失！
+```
+
+> **大白话**：React 判断"是不是同一个组件"主要看**类型**。如果类型换了（比如从 ComponentA 变成 ComponentB），React 会把旧的整个拆掉，重新建一个。这就像你换了一台新手机——旧手机里的 App 数据当然不会带到新手机上。
+
+**解决方案：用 key 强制 React 区分**
+
+```jsx
+{showA
+  ? <ComponentA key="comp-a" />
+  : <ComponentB key="comp-b" />
+}
+
+// 有了 key 之后，React 的判断变了：
+// key="comp-a" → key="comp-b"
+// key 不同！即使类型可能相同，也会销毁旧的、创建新的
+```
+
+---
+
 ## ✅ 阶段检查清单
 
 - [ ] 理解什么是条件渲染

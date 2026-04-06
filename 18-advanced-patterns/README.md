@@ -810,4 +810,981 @@ Provider 不是万能的，需要合理使用：
 
 ---
 
+## 🏗️ 大型 React 项目的工程化实践
+
+### 1. Monorepo 管理实战
+
+#### 什么时候该用 Monorepo？
+
+```
+✅ 适合 Monorepo 的信号：
+  • 多个项目共享组件库 / 工具函数
+  • 有多个关联的前端应用（Web + Admin + H5）
+  • 团队频繁跨项目修改
+  • 想统一 lint / test / build 配置
+
+❌ 不适合 Monorepo 的信号：
+  • 项目之间没有代码共享
+  • 团队很小（< 3 人）且只维护一个项目
+  • 各项目技术栈差异大（React + Vue + Angular 混用）
+```
+
+#### pnpm workspaces + Turborepo 配置
+
+```bash
+# 1. 初始化 Monorepo
+mkdir my-monorepo && cd my-monorepo
+pnpm init
+
+# 2. 安装 Turborepo
+pnpm add -Dw turbo
+
+# 3. 创建目录结构
+mkdir -p packages/ui packages/utils apps/web apps/admin
+```
+
+```json
+// pnpm-workspace.yaml
+packages:
+  - 'packages/*'
+  - 'apps/*'
+```
+
+```json
+// package.json（根目录）
+{
+  "name": "my-monorepo",
+  "private": true,
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0",
+    "typescript": "^5.0.0"
+  }
+}
+```
+
+```json
+// turbo.json
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "test": {
+      "dependsOn": ["build"]
+    },
+    "lint": {}
+  }
+}
+```
+
+```
+Monorepo 目录结构
+my-monorepo/
+├── apps/
+│   ├── web/           # 主站应用
+│   │   ├── package.json
+│   │   └── src/
+│   └── admin/         # 管理后台
+│       ├── package.json
+│       └── src/
+├── packages/
+│   ├── ui/            # 共享 UI 组件库
+│   │   ├── package.json
+│   │   ├── src/
+│   │   └── tsconfig.json
+│   ├── utils/         # 共享工具函数
+│   │   ├── package.json
+│   │   └── src/
+│   └── tsconfig/      # 共享 TypeScript 配置
+│       ├── base.json
+│       └── react.json
+├── pnpm-workspace.yaml
+├── turbo.json
+└── package.json
+```
+
+#### 共享包设计
+
+```json
+// packages/ui/package.json
+{
+  "name": "@myrepo/ui",
+  "version": "0.0.0",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  }
+}
+```
+
+```tsx
+// packages/ui/src/index.ts —— 导出入口
+export { Button } from './components/Button';
+export { Modal } from './components/Modal';
+export { Input } from './components/Input';
+export { Toast } from './components/Toast';
+```
+
+#### Monorepo 的 CI/CD 策略
+
+```yaml
+# GitHub Actions —— 只构建和测试受影响的包
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Turborepo 需要完整的 git 历史
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      # Turborepo 会自动识别哪些包发生了变化
+      # 只构建和测试受影响的包及其依赖
+      - run: pnpm turbo build test lint
+```
+
+---
+
+### 2. 组件库设计与开发
+
+#### 组件 API 设计原则
+
+```
+组件 API 设计的 5 个原则：
+
+1. 一致性    → 所有组件的 API 风格统一
+   示例：size 都用 'sm' | 'md' | 'lg'
+         variant 都用 'primary' | 'secondary' | 'outline'
+
+2. 可控性    → 同时支持受控和非受控模式
+   示例：<Input value={val} onChange={fn} />    // 受控
+         <Input defaultValue="初始值" />        // 非受控
+
+3. 可扩展性  → 提供转义舱（escape hatch）
+   示例：className / style / as prop
+         <Button as="a" href="/link">链接按钮</Button>
+
+4. 可访问性  → 内置 ARIA 属性
+   示例：role, aria-label, aria-expanded 等
+
+5. 可组合性  → 通过 children / render prop 支持自定义
+   示例：<Modal><Modal.Header /><Modal.Body /></Modal>
+```
+
+```tsx
+// Button 组件 —— 良好的 API 设计示例
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  /** 按钮尺寸 */
+  size?: 'sm' | 'md' | 'lg';
+  /** 按钮类型 */
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+  /** 是否加载中 */
+  isLoading?: boolean;
+  /** 图标（渲染在文字前面） */
+  icon?: React.ReactNode;
+  /** 整体宽度 */
+  fullWidth?: boolean;
+  /** 渲染为其他元素 */
+  as?: React.ElementType;
+}
+
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ size = 'md', variant = 'primary', isLoading, icon, fullWidth, as: Component = 'button', children, disabled, ...rest }, ref) => {
+    return (
+      <Component
+        ref={ref}
+        className={cn('btn', `btn-${variant}`, `btn-${size}`, fullWidth && 'btn-full')}
+        disabled={disabled || isLoading}
+        {...rest}
+      >
+        {isLoading ? <Spinner className="btn-spinner" /> : icon}
+        {children}
+      </Component>
+    );
+  }
+);
+```
+
+#### Storybook 文档自动生成
+
+```bash
+# 安装 Storybook
+npx storybook@latest init
+```
+
+```tsx
+// src/components/Button/Button.stories.tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import { Button } from './Button';
+
+const meta: Meta<typeof Button> = {
+  title: 'Components/Button',
+  component: Button,
+  tags: ['autodocs'], // 自动生成文档
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['primary', 'secondary', 'outline', 'ghost', 'danger'],
+    },
+    size: {
+      control: 'select',
+      options: ['sm', 'md', 'lg'],
+    },
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof Button>;
+
+export const Primary: Story = {
+  args: {
+    children: 'Primary Button',
+    variant: 'primary',
+  },
+};
+
+export const Loading: Story = {
+  args: {
+    children: 'Loading',
+    isLoading: true,
+  },
+};
+
+export const AllVariants: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: 8 }}>
+      <Button variant="primary">Primary</Button>
+      <Button variant="secondary">Secondary</Button>
+      <Button variant="outline">Outline</Button>
+      <Button variant="ghost">Ghost</Button>
+      <Button variant="danger">Danger</Button>
+    </div>
+  ),
+};
+```
+
+#### 组件版本管理（Changesets）
+
+```bash
+# 安装 Changesets
+pnpm add -Dw @changesets/cli
+pnpm changeset init
+```
+
+```bash
+# 发布新版本流程
+pnpm changeset         # 选择变更的包和版本类型
+pnpm changeset version # 更新版本号和 CHANGELOG
+pnpm changeset publish # 发布到 npm
+```
+
+```json
+// .changeset/config.json
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.0.0/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [],
+  "linked": [],
+  "access": "restricted",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch"
+}
+```
+
+#### 主题系统实现
+
+```tsx
+// 设计令牌（Design Tokens）
+const tokens = {
+  colors: {
+    primary: {
+      50: '#eff6ff',
+      100: '#dbeafe',
+      500: '#3b82f6',
+      600: '#2563eb',
+      700: '#1d4ed8',
+    },
+    gray: {
+      50: '#f9fafb',
+      900: '#111827',
+    },
+  },
+  spacing: {
+    xs: '4px',
+    sm: '8px',
+    md: '16px',
+    lg: '24px',
+    xl: '32px',
+  },
+  radii: {
+    sm: '4px',
+    md: '8px',
+    lg: '12px',
+    full: '9999px',
+  },
+  fontSizes: {
+    sm: '14px',
+    md: '16px',
+    lg: '18px',
+    xl: '24px',
+  },
+} as const;
+
+// CSS Variables 方案（推荐）
+// 在 :root 或 [data-theme="dark"] 中定义变量
+const themeVars = {
+  light: `
+    --color-primary: ${tokens.colors.primary[600]};
+    --color-bg: #ffffff;
+    --color-text: ${tokens.colors.gray[900]};
+    --color-border: ${tokens.colors.gray[50]};
+  `,
+  dark: `
+    --color-primary: ${tokens.colors.primary[400]};
+    --color-bg: ${tokens.colors.gray[900]};
+    --color-text: #f9fafb;
+    --color-border: ${tokens.colors.gray[700]};
+  `,
+};
+
+// 在组件中使用 CSS Variables
+function ThemedButton() {
+  return (
+    <button className="themed-btn">Click me</button>
+  );
+}
+
+// CSS
+// .themed-btn { background: var(--color-primary); color: var(--color-text); }
+```
+
+---
+
+### 3. API 层架构设计
+
+#### API Client 封装
+
+```tsx
+// lib/api-client.ts —— Axios 实例封装
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+
+const apiClient = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+  timeout: 15000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// 请求拦截器 —— 自动附加 token
+apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// 响应拦截器 —— 统一错误处理
+apiClient.interceptors.response.use(
+  (response) => response.data, // 直接返回 data
+  (error: AxiosError) => {
+    if (error.response?.status === 401) {
+      // token 过期，跳转登录
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+
+    // 统一错误提示
+    const message = (error.response?.data as any)?.message || error.message;
+    toast.error(message);
+
+    return Promise.reject(error);
+  }
+);
+
+export default apiClient;
+```
+
+#### React Query 使用模式
+
+```tsx
+// hooks/useUsers.ts —— 封装 API Hook
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import apiClient from '@/lib/api-client';
+
+// 查询用户列表
+export function useUsers(params: { page: number; pageSize: number }) {
+  return useQuery({
+    queryKey: ['users', params],
+    queryFn: () => apiClient.get('/users', { params }),
+    placeholderData: (oldData) => oldData, // 翻页时保留旧数据
+  });
+}
+
+// 查询单个用户
+export function useUser(id: number) {
+  return useQuery({
+    queryKey: ['users', id],
+    queryFn: () => apiClient.get(`/users/${id}`),
+    enabled: !!id, // id 存在时才请求
+  });
+}
+
+// 创建用户（乐观更新）
+export function useCreateUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: CreateUserDTO) => apiClient.post('/users', data),
+    onSuccess: () => {
+      // 创建成功后，使用户列表缓存失效，触发重新获取
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('用户创建成功');
+    },
+  });
+}
+
+// 删除用户（乐观更新）
+export function useDeleteUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => apiClient.delete(`/users/${id}`),
+    onMutate: async (id) => {
+      // 取消正在进行的查询
+      await queryClient.cancelQueries({ queryKey: ['users'] });
+
+      // 保存当前缓存
+      const previousUsers = queryClient.getQueryData(['users']);
+
+      // 乐观更新：立即从列表中移除
+      queryClient.setQueryData(['users'], (old: any) => ({
+        ...old,
+        items: old.items.filter((u: any) => u.id !== id),
+      }));
+
+      return { previousUsers };
+    },
+    onError: (_err, _id, context) => {
+      // 出错时回滚
+      queryClient.setQueryData(['users'], context?.previousUsers);
+      toast.error('删除失败');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+  });
+}
+```
+
+#### API 响应类型统一处理
+
+```tsx
+// types/api.ts
+interface ApiResponse<T> {
+  code: number;
+  data: T;
+  message: string;
+}
+
+interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  avatar: string;
+  createdAt: string;
+}
+
+// hooks/useUsers.ts
+export function useUsers(params: { page: number }) {
+  return useQuery<PaginatedResponse<User>>({
+    queryKey: ['users', params],
+    queryFn: async () => {
+      const res = await apiClient.get<ApiResponse<PaginatedResponse<User>>>(
+        '/users',
+        { params }
+      );
+      return res.data; // 自动推导类型
+    },
+  });
+}
+```
+
+#### 请求取消和竞态条件处理
+
+```tsx
+import { useEffect, useRef, useState } from 'react';
+
+// 方案 1：使用 AbortController
+function useSearch(query: string) {
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    if (!query.trim()) {
+      setResults([]);
+      return;
+    }
+
+    // 取消上一次未完成的请求
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    setLoading(true);
+
+    fetch(`/api/search?q=${encodeURIComponent(query)}`, {
+      signal: controller.signal,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!controller.signal.aborted) {
+          setResults(data);
+        }
+      })
+      .catch((err) => {
+        if (err.name !== 'AbortError') {
+          console.error('搜索失败:', err);
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, [query]);
+
+  return { results, loading };
+}
+
+// 方案 2：React Query 自动处理竞态
+// React Query 内置了竞态条件处理，每次新的请求会自动取消上一个
+export function useSearchWithRQ(query: string) {
+  return useQuery({
+    queryKey: ['search', query],
+    queryFn: () => apiClient.get('/search', { params: { q: query } }),
+    enabled: !!query.trim(),
+  });
+}
+```
+
+---
+
+### 4. CI/CD 与自动化部署
+
+#### GitHub Actions 工作流配置
+
+```yaml
+# .github/workflows/ci-cd.yml
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: '20'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ─── 第 1 步：代码质量检查 ───
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm type-check  # tsc --noEmit
+
+  # ─── 第 2 步：测试 ───
+  test:
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test --coverage
+      - uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/lcov.info
+
+  # ─── 第 3 步：构建 ───
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+
+      # 上传构建产物
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-dist
+          path: dist/
+
+  # ─── 第 4 步：部署（仅 main 分支） ───
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-dist
+          path: dist/
+
+      # 部署到 Vercel（示例）
+      - uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+```
+
+#### 自动化版本管理和 Changelog 生成
+
+```bash
+# 安装 standard-version（语义化版本管理）
+pnpm add -Dw standard-version
+```
+
+```json
+// package.json
+{
+  "scripts": {
+    "release": "standard-version",
+    "release:first": "standard-version --first-release"
+  }
+}
+```
+
+```
+版本号规范（SemVer）：
+  major.minor.patch
+
+  • patch (1.0.0 → 1.0.1) ：Bug 修复，向后兼容
+  • minor (1.0.0 → 1.1.0) ：新功能，向后兼容
+  • major (1.0.0 → 2.0.0) ：破坏性变更
+
+  commit message 约定：
+    feat: 新功能 → 自动 bump minor
+    fix: 修复   → 自动 bump patch
+    BREAKING CHANGE → 自动 bump major
+```
+
+```bash
+# 使用方式
+git add .
+git commit -m "feat: 添加用户搜索功能"
+pnpm release   # 自动更新版本号和 CHANGELOG.md
+git push --follow-tags
+```
+
+#### Lighthouse 性能评分集成
+
+```yaml
+# 在 CI 中集成 Lighthouse 检查
+- name: Lighthouse CI
+  uses: treosh/lighthouse-ci-action@v11
+  with:
+    configPath: .lighthouserc.json
+    uploadArtifacts: true
+```
+
+```json
+// .lighthouserc.json
+{
+  "ci": {
+    "collect": {
+      "startServerCommand": "npm run preview",
+      "url": ["http://localhost:4173/"]
+    },
+    "assert": {
+      "assertions": {
+        "categories:performance": ["warn", { "minScore": 0.9 }],
+        "categories:accessibility": ["error", { "minScore": 0.9 }],
+        "categories:best-practices": ["warn", { "minScore": 0.9 }]
+      }
+    },
+    "upload": {
+      "target": "temporary-public-storage"
+    }
+  }
+}
+```
+
+---
+
+### 5. 项目性能优化实战 Checklist
+
+#### 代码分割策略
+
+```tsx
+// 路由级代码分割（React.lazy + Suspense）
+import { lazy, Suspense } from 'react';
+
+const HomePage = lazy(() => import('./pages/HomePage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+
+function App() {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+      </Routes>
+    </Suspense>
+  );
+}
+
+// 组件级代码分割（非首屏关键组件）
+function ProductPage() {
+  return (
+    <div>
+      <ProductInfo /> {/* 首屏关键，正常加载 */}
+      <Suspense fallback={<CommentsSkeleton />}>
+        <LazyComments /> {/* 评论区，懒加载 */}
+      </Suspense>
+      <Suspense fallback={<RecommendationsSkeleton />}>
+        <LazyRecommendations /> {/* 推荐区，懒加载 */}
+      </Suspense>
+    </div>
+  );
+}
+
+const LazyComments = lazy(() => import('./components/Comments'));
+const LazyRecommendations = lazy(() => import('./components/Recommendations'));
+```
+
+#### 图片优化
+
+```tsx
+// 1. 响应式图片
+<img
+  srcSet="
+    small.jpg 320w,
+    medium.jpg 640w,
+    large.jpg 1024w
+  "
+  sizes="(max-width: 640px) 320px, (max-width: 1024px) 640px, 1024px"
+  src="medium.jpg"
+  alt="响应式图片示例"
+  loading="lazy"
+/>
+
+// 2. 图片懒加载
+<img src={imageUrl} alt={alt} loading="lazy" decoding="async" />
+
+// 3. WebP 格式（现代浏览器）+ JPEG 降级
+<picture>
+  <source srcSet="image.webp" type="image/webp" />
+  <source srcSet="image.jpg" type="image/jpeg" />
+  <img src="image.jpg" alt="WebP 降级" loading="lazy" />
+</picture>
+```
+
+#### 打包体积分析
+
+```bash
+# Vite 项目
+pnpm add -D vite-plugin-visualizer
+```
+
+```tsx
+// vite.config.ts
+import { visualizer } from 'vite-plugin-visualizer';
+
+export default defineConfig({
+  plugins: [
+    react(),
+    visualizer({
+      open: true,              // 自动打开浏览器
+      gzipSize: true,          // 显示 gzip 压缩后大小
+      brotliSize: true,        // 显示 brotli 压缩后大小
+      filename: 'stats.html',  // 输出文件
+    }),
+  ],
+});
+```
+
+```bash
+# Webpack 项目
+pnpm add -D webpack-bundle-analyzer
+```
+
+```javascript
+// webpack.config.js
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+
+module.exports = {
+  plugins: [
+    new BundleAnalyzerPlugin({ analyzerMode: 'static', openAnalyzer: true }),
+  ],
+};
+```
+
+#### 首屏加载优化
+
+```tsx
+// Skeleton 加载占位（首屏优化）
+function PageSkeleton() {
+  return (
+    <div className="animate-pulse">
+      <div className="h-8 bg-gray-200 rounded w-1/3 mb-4" /> {/* 标题骨架 */}
+      <div className="space-y-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-20 bg-gray-200 rounded" /> {/* 卡片骨架 */}
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// 预加载关键资源（index.html）
+/*
+<link rel="preload" href="/fonts/main.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preconnect" href="https://api.myapp.com" />
+<link rel="dns-prefetch" href="https://cdn.myapp.com" />
+*/
+```
+
+#### Core Web Vitals 优化指南
+
+| 指标 | 含义 | 目标 | 优化方向 |
+|------|------|------|---------|
+| **LCP** | 最大内容绘制 | < 2.5s | 服务端渲染、图片优化、CDN |
+| **INP** | 交互到下一帧绘制 | < 200ms | 减少主线程阻塞、代码分割 |
+| **CLS** | 累积布局偏移 | < 0.1 | 设置图片尺寸、避免动态插入内容 |
+
+```tsx
+// LCP 优化：预加载关键图片
+<img
+  src={heroImage}
+  alt="Hero"
+  width={1200}        // ⭐ 设置尺寸防止 CLS
+  height={600}
+  priority            // Next.js: 预加载 LCP 图片
+  fetchPriority="high" // 原生: 高优先级加载
+/>
+
+// INP 优化：避免主线程阻塞
+// ❌ 不好：在渲染期间进行大量计算
+function HeavyComponent({ data }) {
+  const sorted = data.sort(complexSort).filter(complexFilter); // 阻塞主线程
+  return <List items={sorted} />;
+}
+
+// ✅ 好：用 useDeferredValue 或 useMemo
+function HeavyComponent({ data }) {
+  const deferredData = useDeferredValue(data);
+  const sorted = useMemo(() => deferredData.sort(complexSort).filter(complexFilter), [deferredData]);
+  return <List items={sorted} />;
+}
+
+// CLS 优化：为图片/视频设置固定尺寸比例
+function ResponsiveImage({ src, alt }) {
+  return (
+    <div style={{ aspectRatio: '16/9', width: '100%', background: '#f0f0f0' }}>
+      <img src={src} alt={alt} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
+    </div>
+  );
+}
+```
+
+✅ **性能优化 Checklist：**
+
+```
+□ 路由级代码分割（React.lazy）
+□ 非首屏组件懒加载
+□ 图片使用 WebP + 响应式尺寸 + loading="lazy"
+□ 关键字体使用 font-display: swap
+□ 使用 CSS 容器替代 JS 动画（transform / opacity）
+□ 列表渲染使用虚拟滚动（react-window / @tanstack/virtual）
+□ API 数据使用 React Query 缓存
+□ 避免在渲染路径中创建新对象/函数（useMemo / useCallback）
+□ 第三方库按需导入（lodash-es / @ant-design/icons）
+□ Lighthouse 评分 > 90 分
+□ LCP < 2.5s, INP < 200ms, CLS < 0.1
+```
+
+---
+
 [→ 19 - 服务端渲染](../19-server-side-rendering/)
