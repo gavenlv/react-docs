@@ -1,5 +1,9 @@
 # 26 - React 内部原理
 
+> **学习建议：** 本章是 React 高级进阶内容。如果你刚学完基础，不用担心完全理解每个细节。建议先建立整体认知，以后需要深入时再回来复习。
+
+---
+
 ## 🎯 本节目标
 - 理解 React 的核心设计理念
 - 掌握虚拟 DOM 和 Diff 算法的工作机制
@@ -8,38 +12,95 @@
 
 ---
 
+## 💡 先用一个故事来理解 React 的核心思想
+
+想象你在管理一个**大型餐厅的菜单展示板**：
+
+- **传统方式（命令式）**：每次菜品变了，你都要亲自走到展示板前，擦掉旧的菜名，用笔写上新的菜名。一个字一个字地改。
+- **React 方式（声明式）**：你只需要告诉助手"展示板应该显示什么"，助手会自动计算哪些菜变了、哪些没变，然后只修改需要改的部分。
+
+React 就是那个"聪明的助手" —— 你只管描述 UI 应该长什么样，它负责高效地更新真实页面。
+
+---
+
 ## 📖 React 核心概念
 
-### 声明式编程
+### 1. 声明式编程
 
-React 采用**声明式**范式，开发者描述"UI 应该是什么样子"，而不是"如何一步步操作 DOM"。
+#### 是什么？
+
+**声明式编程**就是：你告诉计算机"我要什么结果"，而不是"一步步怎么做"。
+
+**命令式**（ Imperative）：告诉计算机每一步怎么做
+**声明式**（ Declarative）：告诉计算机你想要什么
+
+#### 类比
+
+- **命令式**就像给出租车司机说："往前开200米，左转，再开500米，右转，到了"
+- **声明式**就像给出租车司机说："我要去天安门"
 
 ```jsx
-// 声明式：你想要什么
-function Counter({ count }) {
+// 命令式：一步一步告诉浏览器怎么做（传统 DOM 操作）
+// 1. 找到元素
+const titleEl = document.getElementById('title');
+const countEl = document.getElementById('count');
+const btnEl = document.getElementById('btn');
+
+// 2. 修改内容
+countEl.textContent = count;
+
+// 3. 绑定事件
+btnEl.addEventListener('click', () => {
+  count++;
+  countEl.textContent = count;
+  if (count > 10) {
+    titleEl.style.color = 'red';
+  }
+});
+
+// 声明式：描述 UI 应该长什么样（React）
+function Counter({ count, onIncrement }) {
   return (
     <div>
-      <p>Count: {count}</p>
-      <button onClick={onIncrement}>+</button>
+      <h1 style={{ color: count > 10 ? 'red' : 'black' }}>
+        计数器
+      </h1>
+      <p>当前值: {count}</p>
+      <button onClick={onIncrement}>+1</button>
     </div>
   );
 }
-
-// 命令式：如何实现
-// document.getElementById('count').textContent = count;
-// document.getElementById('btn').onclick = onIncrement;
+// 你不需要操心 DOM 怎么更新，React 自动帮你处理！
 ```
 
-### 虚拟 DOM (Virtual DOM)
+#### 为什么 React 选择声明式？
 
-**为什么需要 Virtual DOM？**
+| 对比 | 命令式 | 声明式 |
+|------|--------|--------|
+| 代码量 | 多（每个步骤都要写） | 少（描述结果即可） |
+| 维护性 | 差（改动一处可能影响多处） | 好（UI 和状态一一对应） |
+| 出Bug概率 | 高（手动操作容易遗漏） | 低（框架保证正确性） |
+| 学习成本 | 低（直觉上好理解） | 稍高（需要理解状态驱动UI） |
+
+### 2. 虚拟 DOM（Virtual DOM）
+
+#### 是什么？
+
+虚拟 DOM 是 React 用 **JavaScript 对象**来描述真实 DOM 结构的一种技术。你可以把它理解为"真实 DOM 的复印件"。
+
+#### 为什么需要它？
 
 直接操作真实 DOM 的代价很高：
-1. **性能开销大**: 每次修改都会触发重排（reflow）和重绘（repaint）
-2. **跨浏览器兼容**: 不同浏览器的 DOM 实现有差异
-3. **难以优化**: 大量手动 DOM 操作难以维护
 
-**Virtual DOM 的解决方案：**
+1. **性能开销大**：每次修改 DOM 都会触发浏览器的"重排"（reflow，重新计算布局）和"重绘"（repaint，重新绘制）
+2. **跨浏览器兼容**：不同浏览器的 DOM 实现有差异
+3. **难以优化**：大量手动 DOM 操作难以维护和优化
+
+**类比：** 想象你要装修房子：
+- **没有虚拟 DOM**：每次改一个家具，工人就要跑到房子里搬一次，改完再搬回来
+- **有虚拟 DOM**：你先在图纸上画好所有要改的地方，然后一次性告诉工人"按这个图纸改"，工人只改需要改的部分
+
+#### 工作原理
 
 ```
 ┌─────────────┐     ┌──────────────────┐     ┌─────────────┐
@@ -51,15 +112,28 @@ function Counter({ count }) {
                     计算最小变更
 ```
 
-**Virtual DOM 的本质：**
+**步骤：**
+1. 你的状态（State）发生变化
+2. React 生成新的虚拟 DOM 树
+3. React 把新树和旧树进行对比（Diff），找出差异
+4. React 只把差异部分应用到真实 DOM（最小化操作）
+
+#### 虚拟 DOM 的本质
+
 - 用 JavaScript 对象表示 DOM 结构
 - 在内存中进行计算和比较
 - 批量更新，最小化真实 DOM 操作
 
-### JSX 到 Virtual DOM 的转换
+### 3. JSX 到 Virtual DOM 的转换
+
+#### 是什么？
+
+JSX 是 React 提供的一种语法糖，让你可以在 JavaScript 中写类似 HTML 的代码。但浏览器不认识 JSX，所以需要编译转换。
+
+#### 怎么转换？
 
 ```jsx
-// JSX（语法糖）
+// 第1步：你写的 JSX（语法糖，看起来像HTML）
 const element = (
   <div className="container">
     <h1>Hello</h1>
@@ -67,21 +141,21 @@ const element = (
   </div>
 );
 
-// 编译后：调用 React.createElement()
+// 第2步：Babel 编译后 → 调用 React.createElement()
 const element = React.createElement(
-  'div',                          // type: 元素类型
-  { className: 'container' },     // props: 属性对象
-  // children: 子元素（可变参数）
+  'div',                          // 第1个参数：元素类型
+  { className: 'container' },     // 第2个参数：属性对象（props）
+  // 第3个及之后的参数：子元素（children）
   React.createElement('h1', null, 'Hello'),
   React.createElement('p', null, 'World')
 );
 
-// 最终生成的 Virtual DOM 对象
+// 第3步：React.createElement() 返回的虚拟 DOM 对象
 {
-  type: 'div',
+  type: 'div',           // 元素类型
   props: {
-    className: 'container',
-    children: [
+    className: 'container',  // 属性
+    children: [              // 子元素
       {
         type: 'h1',
         props: { children: 'Hello' }
@@ -92,16 +166,34 @@ const element = React.createElement(
       }
     ]
   },
-  key: null,
-  ref: null
+  key: null,              // key（用于列表优化）
+  ref: null               // ref（用于直接访问DOM）
 }
 ```
+
+#### 为什么要了解这个？
+
+- 当你遇到 "React.createElement is not a function" 之类的错误时，你就知道是编译出了问题
+- 理解了底层机制，就能更好地理解 React 的工作方式
+- 面试经常问 📝
 
 ---
 
 ## 🔄 协调与渲染
 
 ### 渲染流程概览
+
+#### 是什么？
+
+当你的数据变化时，React 会经历两个阶段来完成 UI 更新：
+
+1. **Render 阶段**（可以被打断）：计算 UI 应该长什么样
+2. **Commit 阶段**（不可打断）：把计算结果应用到真实 DOM
+
+#### 类比
+
+- **Render 阶段**就像建筑师在图纸上画设计图（可以随时擦掉重画）
+- **Commit 阶段**就像施工队按图纸实际建造（一旦开始就不能停）
 
 ```
 State/Props 变化
@@ -111,7 +203,7 @@ State/Props 变化
 │  （纯函数，可以被打断）                    │
 │                                          │
 │  • 调用组件函数生成新的 Virtual DOM        │
-│  • 不涉及任何副作用                        │
+│  • 不涉及任何副作用（不操作真实DOM）        │
 │  • 可被高优先级任务中断                    │
 └─────────────────────────────────────────┘
       ↓
@@ -129,14 +221,14 @@ State/Props 变化
 
 ### Render 阶段详解
 
-**1. 触发更新**
+**1. 触发更新的方式**
 
 ```jsx
 // 多种触发更新的方式
-setState(newValue);              // State 变化
-forceUpdate();                  // 强制更新
-父组件重新渲染导致 props 变化    // Props 变化
-Context 值变化                   // Context 变化
+setState(newValue);              // State 变化：最常见
+forceUpdate();                  // 强制更新：一般不推荐
+父组件重新渲染导致 props 变化    // Props 变化：子组件被动更新
+Context 值变化                   // Context 变化：消费该Context的组件更新
 ```
 
 **2. 创建 Update 对象**
@@ -144,12 +236,12 @@ Context 值变化                   // Context 变化
 每个状态更新都会创建一个 Update 对象：
 
 ```javascript
-// Update 结构
+// Update 的结构（简化版）
 const update = {
   action: action,          // 更新内容（值或函数）
-  priority: priority,      // 优先级
-  tag: tag,                // 更新标签（ReplaceState、ForceUpdate 等）
-  next: null               // 链表指针
+  priority: priority,      // 优先级（高/中/低）
+  tag: tag,                // 更新类型（ReplaceState、ForceUpdate 等）
+  next: null               // 链表指针（指向下一个更新）
 };
 ```
 
@@ -160,11 +252,14 @@ const update = {
 ```javascript
 // Scheduler 根据优先级安排任务
 if (isHighPriority(update)) {
-  scheduleImmediateWork(render);  // 同步或微任务
+  // 高优先级：用户正在交互，需要立即响应
+  scheduleImmediateWork(render);
 } else if (isUserBlockingPriority(update)) {
-  scheduleCallback(NORMAL_PRIORITY_TASK, render);  // requestAnimationFrame 或 setTimeout
+  // 中优先级：比如页面切换动画
+  scheduleCallback(NORMAL_PRIORITY_TASK, render);
 } else {
-  scheduleCallback(IDLE_PRIORITY_TASK, render);  // requestIdleCallback
+  // 低优先级：比如后台数据分析
+  scheduleCallback(IDLE_PRIORITY_TASK, render);
 }
 ```
 
@@ -172,26 +267,32 @@ if (isHighPriority(update)) {
 
 ## 🔍 Reconciliation（协调）算法
 
-### 为什么叫 "Reconciliation"？
+### 是什么？
 
-React 通过对比新旧两棵 Virtual DOM 树，确定如何最高效地更新 UI。这个过程称为**协调（Reconciliation）**。
+React 通过对比新旧两棵虚拟 DOM 树，确定如何最高效地更新 UI。这个过程称为**协调（Reconciliation）**，核心是 **Diff 算法**。
+
+### 为什么叫"协调"？
+
+因为 React 不是简单地把旧树删掉、新树建起来（那样效率太低），而是像一个聪明的编辑在"协调"两版稿件，找出最小的改动。
 
 ### Diff 算法的三个假设
 
-为了降低算法复杂度（从 O(n³) 到 O(n)），Diff 算法基于以下假设：
+> **重要：** 为了把时间复杂度从 O(n³) 降低到 O(n)，Diff 算法做了三个大胆的假设：
 
-1. **不同类型的元素会产生不同的树**
-2. **可以通过 key 来识别哪些子元素在不同渲染中保持不变**
-3. **开发者可以通过 key 暗示哪些子元素是稳定的**
+| 假设 | 含义 | 违反的后果 |
+|------|------|-----------|
+| 1. 不同类型 → 不同树 | `<div>` 变成 `<span>`，会销毁重建 | 不能频繁切换根元素类型 |
+| 2. 通过 key 识别稳定元素 | 有相同 key 的元素被视为同一个 | key 必须稳定且唯一 |
+| 3. 开发者通过 key 暗示稳定性 | React 信任你给的 key | 不要用随机数做 key |
 
-### Diff 策略
+### Diff 策略详解
 
 #### 策略一：树层级的比较（Tree Level）
 
-React 只比较同一层级的节点，不会跨层级比较。
+React **只比较同一层级的节点**，不会跨层级比较。这意味着如果根节点类型不同，整个树都会被销毁重建。
 
 ```jsx
-// 如果根节点类型不同，销毁旧树，创建新树
+// 如果根节点类型不同 → 销毁旧树，创建新树
 // 之前：
 <div>
   <Counter />
@@ -199,21 +300,21 @@ React 只比较同一层级的节点，不会跨层级比较。
 
 // 之后：
 <span>
-  <Counter />  {/* 即使内部相同，也会被销毁重建 */}
+  <Counter />  {/* 虽然 Counter 没变，但它的父节点从 div 变成了 span，所以会被销毁重建！ */}
 </span>
 ```
 
 **优化建议：** 避免在条件判断中改变根元素的类型
 
 ```jsx
-// ❌ 不好的做法
+// ❌ 不好的做法：根元素类型会变化
 {condition ? (
-  <div><Component /></div>  // div → span 类型变化
+  <div><Component /></div>  // div → span，类型变化导致子树全部重建
 ) : (
   <span><Component /></span>
 )}
 
-// ✅ 好的做法
+// ✅ 好的做法：保持外层元素类型不变，只切换内部组件
 <div className="wrapper">
   {condition ? <ComponentA /> : <ComponentB />}
 </div>
@@ -221,44 +322,45 @@ React 只比较同一层级的节点，不会跨层级比较。
 
 #### 策略二：组件的比较（Component）
 
-对于同一类型的组件，React 会更新组件实例的 props，并调用 `componentWillReceiveProps`（类组件）或重新执行函数组件。
+对于同一类型的组件，React 会复用组件实例，只更新 props。
 
-**关键点：** 组件实例保持不变，只更新输入。
+**类比：** 就像你换了一身衣服（更新 props），但你还是你（同一个组件实例）。
 
 ```jsx
 // 组件类型相同 → 复用实例，更新 props
 <Avatar user={user1} />  →  <Avatar user={user2} />
-// Avatar 组件实例被复用，只是接收了新的 props
+// Avatar 组件实例被复用，只是接收了新的 user props
+// 组件内部的状态（state）会保留！
 ```
 
 #### 策略三：子元素列表的比较（Child Reconciliation）
 
 这是最复杂也最需要优化的部分。
 
-**无 key 的情况：**
+**无 key 的情况（默认按索引比较）：**
 
 ```jsx
-// 初始
+// 初始状态
 <ul>
-  <li>第一项</li>    // index 0
-  <li>第二项</li>    // index 1
-  <li>第三项</li>    // index 2
+  <li>第一项</li>    // 索引 0
+  <li>第二项</li>    // 索引 1
+  <li>第三项</li>    // 索引 2
 </ul>
 
 // 在开头插入新项
 <ul>
-  <li>新增项</li>    // index 0 ← 这里！
-  <li>第一项</li>    // index 1 → 原来是 0
-  <li>第二项</li>    // index 2 → 原来是 1
-  <li>第三项</li>    // index 3 → 原来是 2
+  <li>新增项</li>    // 索引 0 ← 变了！
+  <li>第一项</li>    // 索引 1（原来是0）
+  <li>第二项</li>    // 索引 2（原来是1）
+  <li>第三项</li>    // 索引 3（原来是2）
 </ul>
 
-// React 的处理（按 index 比较）：
-// index 0: "第一项" vs "新增项" → 修改为 "新增项"
-// index 1: "第二项" vs "第一项" → 修改为 "第一项"
-// index 2: "第三项" vs "第二项" → 修改为 "第二项"
-// 新增 index 3: "第三项"
-// 结果：所有元素都变了！效率很低 ❌
+// React 按索引比较的处理：
+// 索引 0: "第一项" → "新增项"  → 修改文本 ❌
+// 索引 1: "第二项" → "第一项"  → 修改文本 ❌
+// 索引 2: "第三项" → "第二项"  → 修改文本 ❌
+// 新增索引 3:                → 新建元素
+// 结果：所有元素都被修改了！效率很低 ❌
 ```
 
 **使用 key 的情况：**
@@ -270,20 +372,39 @@ React 只比较同一层级的节点，不会跨层级比较。
 <li key="3">第三项</li>
 
 // 插入后：
-<li key="new">新增项</li>  // 新增
-<li key="1">第一项</li>    // 保持不变 ✓
-<li key="2">第二项</li>    // 保持不变 ✓
-<li key="3">第三项</li>    // 保持不变 ✓
+<li key="new">新增项</li>  // React 发现是新的 key → 新建 ✅
+<li key="1">第一项</li>    // key=1 没变 → 保持不变 ✅
+<li key="2">第二项</li>    // key=2 没变 → 保持不变 ✅
+<li key="3">第三项</li>    // key=3 没变 → 保持不变 ✅
 
-// React 的处理：
-// 只需插入一个新的元素！效率很高 ✅
+// React 的处理：只需要插入一个新元素！效率很高 ✅
 ```
 
-**Key 的选择原则：**
-- ✅ 使用稳定、唯一的 ID（如数据库主键）
-- ⚠️ 可以使用 index（仅当列表静态且不变时）
-- ❌ 不要使用随机数（每次渲染都变）
-- ❌ 不要使用可能重复的字段
+#### Key 的选择原则
+
+| 做法 | 评价 | 说明 |
+|------|------|------|
+| ✅ 使用数据库 ID | 最好 | `key={item.id}`，稳定且唯一 |
+| ⚠️ 使用 index | 谨慎 | 仅当列表**静态不变**时才用 |
+| ❌ 使用随机数 | 禁止 | 每次渲染都变，失去意义 |
+| ❌ 使用可能重复的字段 | 禁止 | 两个元素有相同 key 会导致 bug |
+
+```jsx
+// ❌ 错误：使用随机数作为 key
+{items.map(item => (
+  <ListItem key={Math.random()} item={item} />
+))}
+
+// ❌ 错误：使用 index 作为 key（列表会变动时）
+{todos.map((todo, index) => (
+  <TodoItem key={index} todo={todo} />
+))}
+
+// ✅ 正确：使用唯一 ID 作为 key
+{todos.map(todo => (
+  <TodoItem key={todo.id} todo={todo} />
+))}
+```
 
 ---
 
@@ -291,77 +412,77 @@ React 只比较同一层级的节点，不会跨层级比较。
 
 ### 核心包结构
 
-React 代码库分为多个核心包：
+React 代码库分为多个核心包，每个包负责不同的功能：
 
-| 包名 | 功能 |
-|------|------|
-| `react` | 公共 API（React、Components、Hooks 等） |
-| `react-dom` | DOM 渲染器（浏览器环境） |
-| `react-reconciler` | 协调器（构建器无关的核心逻辑） |
-| `scheduler` | 调度器（任务优先级管理） |
-| `react-art` | Canvas/SVG 渲染 |
+| 包名 | 功能 | 类比 |
+|------|------|------|
+| `react` | 公共 API（React、Components、Hooks 等） | 餐厅的**菜单**（你看到的部分） |
+| `react-dom` | DOM 渲染器（浏览器环境） | 餐厅的**厨师**（在浏览器上做菜） |
+| `react-reconciler` | 协调器（平台无关的核心逻辑） | 餐厅的**经理**（协调所有人） |
+| `scheduler` | 调度器（任务优先级管理） | 餐厅的**服务员调度系统** |
+| `react-art` | Canvas/SVG 渲染 | 餐厅的**外卖部门** |
 
 ### 包之间的关系
 
 ```
 用户代码 (App)
     ↓ 调用
-react (API 层)
+react (API 层)          ← 你直接使用的包
     ↓ 内部调用
-react-dom / react-native (Renderer - 平台相关)
+react-dom / react-native (Renderer - 平台相关)  ← 负责渲染到具体平台
     ↓ 内部调用
-react-reconciler (Reconciler - 平台无关)
+react-reconciler (Reconciler - 平台无关)         ← 核心协调逻辑
     ↓ 内部调用
-scheduler (Scheduler - 任务调度)
+scheduler (Scheduler - 任务调度)                  ← 决定什么时候做什么事
 ```
 
 ### Fiber 节点结构
 
-Fiber 是 React 内部工作的核心数据结构：
+Fiber 是 React 内部工作的核心数据结构。你可以把它理解为 React 内部的"工作单元" —— 每个 React 元素都对应一个 Fiber 节点。
 
 ```javascript
-// 简化的 Fiber 节点结构
+// 简化的 Fiber 节点结构（真实源码有更多属性）
 function FiberNode(tag, pendingProps, key) {
   // === 实例相关 ===
-  this.tag = tag;                    // 组件类型标记
-  this.key = key;                    // key
-  this.type = null;                  // 函数/类/字符串
-  this.stateNode = null;            // DOM 元素/组件实例
-  
-  // === 树结构 ===
-  this.return = null;               // 父 fiber
-  this.child = null;                // 第一个子 fiber
-  this.sibling = null;              // 下一个兄弟 fiber
-  this.index = 0;                   // 在兄弟中的索引
-  
+  this.tag = tag;                    // 组件类型标记（函数组件/类组件/HTML元素等）
+  this.key = key;                    // key（用于 diff 优化）
+  this.type = null;                  // 函数/类/字符串（如 'div' 或 MyComponent）
+  this.stateNode = null;            // DOM 元素或组件实例（真实的节点引用）
+
+  // === 树结构（通过这三个属性组成树） ===
+  this.return = null;               // 父 Fiber（指向上面的节点）
+  this.child = null;                // 第一个子 Fiber（指向下面的第一个节点）
+  this.sibling = null;              // 下一个兄弟 Fiber（指向右边的节点）
+  this.index = 0;                   // 在兄弟中的索引位置
+
   // === Props ===
-  this.pendingProps = pendingProps; // 新 props
-  this.memoizedProps = null;        // 上一次渲染的 props
-  
+  this.pendingProps = pendingProps; // 新的 props（即将使用的）
+  this.memoizedProps = null;        // 上一次渲染使用的 props（旧的）
+
   // === State/Hooks ===
-  this.memoizedState = null;        // 上一次的状态
+  this.memoizedState = null;        // 上一次渲染后的 state（Hooks 链表头）
   this.updateQueue = null;          // 待处理的更新队列
-  
-  // === Effects ===
-  this.flags = NoFlags;             // 副作用标记
-  this.subtreeFlags = NoFlags;      // 子树副作用
-  this.deletions = null;            // 待删除的子节点
-  
-  // === 双缓存 ===
-  this.alternate = null;            // 对应的另一个树的 fiber
-  
+
+  // === Effects（副作用标记） ===
+  this.flags = NoFlags;             // 当前节点需要执行的副作用（如插入/更新/删除）
+  this.subtreeFlags = NoFlags;      // 子树中存在的副作用标记
+  this.deletions = null;            // 待删除的子节点列表
+
+  // === 双缓存（核心！） ===
+  this.alternate = null;            // 对应另一棵树中的 fiber 节点
+
   // === 调度 ===
-  this.lanes = NoLanes;             // 该 fiber 涉及的 lanes
-  this.childLanes = NoLanes;        // 子树的 lanes
+  this.lanes = NoLanes;             // 该 fiber 涉及的优先级车道
+  this.childLanes = NoLanes;        // 子树涉及的优先级车道
 }
 ```
 
 ### Fiber 树的结构
 
-React 维护两棵 Fiber 树：
+React 维护**两棵** Fiber 树（双缓存技术）：
 
 ```
-currentTree (当前屏幕显示的内容)
+currentTree（当前屏幕显示的内容 —— "当前版"）
     │
     ├── rootFiber
     │       ├── App
@@ -370,8 +491,8 @@ currentTree (当前屏幕显示的内容)
     │       │       ├── Sidebar
     │       │       └── Main
     │       └── Footer
-    
-workInProgressTree (正在构建的新树)
+
+workInProgressTree（正在构建的新树 —— "草稿版"）
     │
     ├── rootFiber (alternate ↔ currentTree.rootFiber)
     │       ├── App (alternate ↔ currentTree.App)
@@ -381,16 +502,19 @@ workInProgressTree (正在构建的新树)
     │       │       └── Main (alternate ↔ ...)
     │       └── Footer (alternate ↔ ...)
 
-完成 commit 后，两棵树互换引用
+完成 commit 后，两棵树互换引用（"草稿版"变成"当前版"）
 ```
+
+**类比：** 就像你用 Word 编辑文档时，你看到的永远是"当前版"，但背后 Word 在维护一个"草稿版"。当你在草稿中改完后，Word 会把草稿提交为当前版。
 
 ---
 
 ## 📊 更新的生命周期
 
-### 同步更新流程
+### 同步更新流程（React 17 及之前的 Legacy Mode）
 
 ```javascript
+// 简化的同步更新流程
 // 1. 创建更新
 const update = createUpdate(eventTime, lane);
 update.payload = payload;
@@ -400,30 +524,33 @@ enqueueUpdate(fiber, update);
 const root = markUpdateLaneFromFiberToRoot(fiber);
 ensureRootIsScheduled(root, eventTime);
 
-// 3. 执行工作循环
+// 3. 执行工作循环（同步，不可中断）
 performSyncWorkOnRoot(root);
 
-// 4. 提交更改
+// 4. 提交更改（应用到真实 DOM）
 commitRoot(root);
 ```
 
-### 并发更新流程（Concurrent Mode）
+### 并发更新流程（React 18 的 Concurrent Mode）
 
 ```javascript
+// 简化的并发更新流程
 // 1. 创建更新（带优先级）
 const lane = requestUpdateLane(fiber);
 const update = createUpdate(eventTime, lane);
 
-// 2. 并发模式下的调度
+// 2. 并发模式下的调度（可以被中断）
 scheduleUpdateOnFiber(fiber, lane, eventTime);
 
-// 3. 可中断的工作循环
+// 3. 可中断的工作循环（核心区别！）
 function workLoopConcurrent() {
+  // 只要还有工作要做，且还没有超过时间限制
   while (workInProgress !== null && !shouldYield()) {
     performUnitOfWork(workInProgress);
   }
-  
-  // 如果还有工作但时间片用完，暂停并让出控制权
+
+  // 如果还有工作但时间片用完了 → 暂停，让出控制权
+  // 等下一次有时间了再继续
 }
 
 // 4. 当再次获得时间片时继续
@@ -432,26 +559,41 @@ function flushWork(currentTime, transitions) {
 }
 ```
 
+### 同步 vs 并发的对比
+
+| 对比 | 同步更新 | 并发更新 |
+|------|---------|---------|
+| 是否可中断 | ❌ 不可中断，一口气做完 | ✅ 可中断，做一点歇一下 |
+| 用户感知 | 复杂页面会卡顿 | 流畅，输入不卡 |
+| 完成顺序 | 按提交顺序 | 高优先级先完成 |
+| API | `ReactDOM.render()` | `createRoot().render()` |
+
 ---
 
 ## 🧪 调试与理解内部机制
 
 ### 使用 React DevTools
 
-1. **Components 面板**: 查看 Fiber 树结构和 props/state
-2. **Profiler 面板**: 录制渲染性能
-3. **Settings**: 启用额外调试选项
+React DevTools 是理解 React 内部机制的最佳工具：
+
+1. **Components 面板**：查看 Fiber 树结构和 props/state
+2. **Profiler 面板**：录制渲染性能，看每个组件渲染花了多长时间
+3. **Settings**：启用额外调试选项
 
 ### 内部调试工具
 
 ```jsx
+// ⚠️ 警告：以下 API 是 React 内部 API，不要在生产代码中使用！
+
 // 开启详细日志
 import { __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED } from 'react';
+// 名字都告诉你了：用了你就被开除 😄
 
 const internals = __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
 
+// ✅ 推荐使用第三方工具代替
 // 追踪渲染原因（React 18+）
-// 安装 @welldone-software/why-did-you-render
+// 安装：npm install @welldone-software/why-did-you-render
 import whyDidYouRender from '@welldone-software/why-did-you-render';
 
 whyDidYouRender(React, {
@@ -462,13 +604,14 @@ whyDidYouRender(React, {
 ### 性能分析标记
 
 ```jsx
-// 使用 Profiler API
+// 使用 Profiler API 追踪组件渲染性能
 import { Profiler } from 'react';
 
+// 渲染回调函数
 function onRenderCallback(
-  id,              // Profiler 树的 id ("App", "Header" 等)
-  phase,           // "mount" 或 "update"
-  actualDuration,  // 本次提交渲染耗时
+  id,              // Profiler 的 id（如 "App", "Header"）
+  phase,           // "mount"（首次渲染）或 "update"（更新）
+  actualDuration,  // 本次提交渲染实际耗时
   baseDuration,    // 不使用 memoization 的预估耗时
   startTime,       // React 开始渲染的时间戳
   commitTime,      // React 提交的时间戳
@@ -480,9 +623,14 @@ function onRenderCallback(
   });
 }
 
-<Profiler id="App" onRender={onRenderCallback}>
-  <App />
-</Profiler>
+// 用 Profiler 包裹组件
+function App() {
+  return (
+    <Profiler id="App" onRender={onRenderCallback}>
+      <MyComplexComponent />
+    </Profiler>
+  );
+}
 ```
 
 ---
@@ -491,9 +639,9 @@ function onRenderCallback(
 
 ### 源码学习路径
 
-1. **入门**: 阅读 [React 源码解析](https://react.jokcy.me/)
-2. **深入**: 克隆 React 源码仓库，添加注释
-3. **实践**: 尝试实现简化版的 React（如 [preact](https://github.com/preactjs/preact)、[mini-react](https://github.com/hujiulong/blog/issues/16)）
+1. **入门**：阅读 [React 源码解析](https://react.jokcy.me/)
+2. **深入**：克隆 React 源码仓库，添加注释
+3. **实践**：尝试实现简化版的 React（如 [preact](https://github.com/preactjs/preact)、[mini-react](https://github.com/hujiulong/blog/issues/16)）
 
 ### 关键源文件
 
@@ -518,6 +666,43 @@ packages/react-dom/src/
 ├── ReactDOMLegacy.js      # 旧版 API（render/hydrate）
 └── ReactDOMHostConfig.js   # Host Config（平台特定配置）
 ```
+
+---
+
+## 📝 练习题
+
+### 练习1：Diff 算法理解（基础题）
+
+思考以下场景中 React 会做什么：
+
+1. `<div>` 变成 `<section>`，但子元素完全相同 → React 会？
+2. `<ul>` 中有三个 `<li>`，删除第一个 → React 会？
+3. 列表有 100 个元素，用 index 做 key，在中间插入一个 → React 会？
+
+### 练习2：渲染流程追踪（进阶题）
+
+假设有如下组件树：
+```
+App
+├── Header
+├── Content
+│   ├── Sidebar
+│   └── Main
+└── Footer
+```
+
+当 `Content` 的 state 变化时：
+1. 哪些组件会重新渲染？
+2. Render 阶段会做什么？
+3. Commit 阶段会做什么？
+
+### 练习3：实现简化版 Virtual DOM（高级题）
+
+尝试实现一个迷你版的 Virtual DOM：
+1. 实现 `createElement` 函数
+2. 实现 `render` 函数（将虚拟 DOM 渲染到真实 DOM）
+3. 实现 `diff` 函数（比较新旧虚拟 DOM，返回最小操作集）
+4. 实现 `patch` 函数（将差异应用到真实 DOM）
 
 ---
 

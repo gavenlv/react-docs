@@ -1,0 +1,78 @@
+{
+  "name": "_auto_472c73ae58c3426f9e4e4ef8b79bcff8",
+  "leadAgentId": "472c73ae58c3426f9e4e4ef8b79bcff8",
+  "workspacePath": "d:\\workspace\\github\\react-docs",
+  "createdAt": "2026-04-06T08:42:59.344Z",
+  "options": {
+    "workspacePath": "d:\\workspace\\github\\react-docs",
+    "isAutoTeam": true
+  },
+  "members": [
+    {
+      "memberId": "team-lead@_auto_472c73ae58c3426f9e4e4ef8b79bcff8",
+      "name": "team-lead",
+      "role": "Team Lead - coordinates the team and interacts with the user"
+    },
+    {
+      "memberId": "enhancer-01-03@_auto_472c73ae58c3426f9e4e4ef8b79bcff8",
+      "name": "enhancer-01-03",
+      "role": "Enhance chapters 01-03 READMEs"
+    },
+    {
+      "memberId": "enhancer-04-06@_auto_472c73ae58c3426f9e4e4ef8b79bcff8",
+      "name": "enhancer-04-06",
+      "role": "Enhance chapters 04-06 READMEs"
+    },
+    {
+      "memberId": "enhancer-07-09@_auto_472c73ae58c3426f9e4e4ef8b79bcff8",
+      "name": "enhancer-07-09",
+      "role": "Enhance chapters 07-09 READMEs"
+    },
+    {
+      "memberId": "enhancer-10-13@_auto_472c73ae58c3426f9e4e4ef8b79bcff8",
+      "name": "enhancer-10-13",
+      "role": "Enhance chapters 10-13 READMEs"
+    },
+    {
+      "memberId": "enhancer-14-17@_auto_472c73ae58c3426f9e4e4ef8b79bcff8",
+      "name": "enhancer-14-17",
+      "role": "Enhance chapters 14-17 READMEs"
+    },
+    {
+      "memberId": "enhancer-18-20@_auto_472c73ae58c3426f9e4e4ef8b79bcff8",
+      "name": "enhancer-18-20",
+      "role": "Enhance chapters 18-20 READMEs"
+    },
+    {
+      "memberId": "enhancer-01-06@_auto_472c73ae58c3426f9e4e4ef8b79bcff8",
+      "name": "enhancer-01-06",
+      "role": "Enhance chapters 01-06 READMEs"
+    },
+    {
+      "memberId": "enhancer-07-12@_auto_472c73ae58c3426f9e4e4ef8b79bcff8",
+      "name": "enhancer-07-12",
+      "role": "Enhance chapters 07-12 READMEs"
+    },
+    {
+      "memberId": "enhancer-13-18@_auto_472c73ae58c3426f9e4e4ef8b79bcff8",
+      "name": "enhancer-13-18",
+      "role": "Enhance chapters 13-18 READMEs"
+    },
+    {
+      "memberId": "enhancer-19-24@_auto_472c73ae58c3426f9e4e4ef8b79bcff8",
+      "name": "enhancer-19-24",
+      "role": "Enhance chapters 19-24 READMEs"
+    },
+    {
+      "memberId": "enhancer-25-30@_auto_472c73ae58c3426f9e4e4ef8b79bcff8",
+      "name": "enhancer-25-30",
+      "role": "Enhance chapters 25-30 READMEs"
+    },
+    {
+      "memberId": "enhancer-28-30@_auto_472c73ae58c3426f9e4e4ef8b79bcff8",
+      "name": "enhancer-28-30",
+      "role": "Enhance chapters 28-30 final READMEs"
+    }
+  ],
+  "isAutoTeam": true
+}
