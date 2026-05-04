@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>变量与数据类型演示</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 40px 20px;
+      background: #f5f5f5;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 40px;
+    }
+    .demo-section {
+      margin: 30px 0;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .demo-title {
+      font-size: 24px;
+      color: #f7df1e;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f7df1e;
+    }
+    .code-block {
+      background: #282c34;
+      color: #abb2bf;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      overflow-x: auto;
+      margin: 15px 0;
+      line-height: 1.6;
+    }
+    .keyword { color: #c678dd; }
+    .string { color: #98c379; }
+    .number { color: #d19a66; }
+    .comment { color: #5c6370; font-style: italic; }
+    .output {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 15px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background: #f5f5f5;
+      font-weight: 600;
+    }
+    .type-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 15px;
+      font-size: 12px;
+      font-weight: 600;
+      margin: 2px;
+    }
+    .type-number { background: #e3f2fd; color: #1976d2; }
+    .type-string { background: #e8f5e9; color: #388e3c; }
+    .type-boolean { background: #fff3e0; color: #f57c00; }
+    .type-undefined { background: #f5f5f5; color: #757575; }
+    .type-object { background: #fce4ec; color: #c2185b; }
+    .type-function { background: #f3e5f5; color: #7b1fa2; }
+    .type-symbol { background: #e0f7fa; color: #00838f; }
+    .type-bigint { background: #fff8e1; color: #ffa000; }
+    button {
+      padding: 10px 20px;
+      font-size: 14px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+      transition: all 0.3s;
+    }
+    .btn-primary {
+      background: #f7df1e;
+      color: #000;
+    }
+    .btn-primary:hover {
+      background: #e5ce1b;
+    }
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin: 20px 0;
+    }
+    .comparison-card {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .comparison-card h3 {
+      margin-bottom: 15px;
+      color: #2c3e50;
+    }
+    .comparison-card .status {
+      font-size: 24px;
+      margin: 10px 0;
+    }
+    .status-yes { color: #27ae60; }
+    .status-no { color: #e74c3c; }
+  </style>
+</head>
+<body>
+  <h1>变量与数据类型演示</h1>
+  
+  <div class="demo-section">
+    <h2 class="demo-title">变量声明方式对比</h2>
+    <div class="comparison-grid">
+      <div class="comparison-card">
+        <h3>let</h3>
+        <div class="status status-yes">✓</div>
+        <p>块级作用域</p>
+        <div class="status status-yes">✓</div>
+        <p>可重新赋值</p>
+        <div class="status status-no">✗</div>
+        <p>不可重复声明</p>
+      </div>
+      <div class="comparison-card">
+        <h3>const</h3>
+        <div class="status status-yes">✓</div>
+        <p>块级作用域</p>
+        <div class="status status-no">✗</div>
+        <p>不可重新赋值</p>
+        <div class="status status-no">✗</div>
+        <p>不可重复声明</p>
+      </div>
+      <div class="comparison-card">
+        <h3>var（不推荐）</h3>
+        <div class="status status-no">✗</div>
+        <p>函数作用域</p>
+        <div class="status status-yes">✓</div>
+        <p>可重新赋值</p>
+        <div class="status status-yes">✓</div>
+        <p>可重复声明</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">数据类型检测</h2>
+    <div class="code-block">
+      <span class="keyword">typeof</span> <span class="number">42</span>           <span class="comment">// 'number'</span><br>
+      <span class="keyword">typeof</span> <span class="string">'hello'</span>      <span class="comment">// 'string'</span><br>
+      <span class="keyword">typeof</span> <span class="keyword">true</span>         <span class="comment">// 'boolean'</span><br>
+      <span class="keyword">typeof</span> <span class="keyword">undefined</span>    <span class="comment">// 'undefined'</span><br>
+      <span class="keyword">typeof</span> <span class="keyword">null</span>         <span class="comment">// 'object' (历史遗留问题)</span><br>
+      <span class="keyword">typeof</span> {}            <span class="comment">// 'object'</span><br>
+      <span class="keyword">typeof</span> []            <span class="comment">// 'object'</span><br>
+      <span class="keyword">typeof</span> <span class="keyword">function</span>(){} <span class="comment">// 'function'</span>
+    </div>
+    <button class="btn-primary" onclick="testTypes()">测试数据类型</button>
+    <div class="output" id="typeOutput">点击按钮测试各种数据类型</div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">原始类型示例</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>类型</th>
+          <th>示例值</th>
+          <th>typeof 结果</th>
+          <th>测试</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="type-badge type-number">Number</span></td>
+          <td>42, 3.14, -10, NaN, Infinity</td>
+          <td>'number'</td>
+          <td><button class="btn-primary" onclick="testValue(42)">测试</button></td>
+        </tr>
+        <tr>
+          <td><span class="type-badge type-string">String</span></td>
+          <td>'hello', "world", `template`</td>
+          <td>'string'</td>
+          <td><button class="btn-primary" onclick="testValue('hello')">测试</button></td>
+        </tr>
+        <tr>
+          <td><span class="type-badge type-boolean">Boolean</span></td>
+          <td>true, false</td>
+          <td>'boolean'</td>
+          <td><button class="btn-primary" onclick="testValue(true)">测试</button></td>
+        </tr>
+        <tr>
+          <td><span class="type-badge type-undefined">undefined</span></td>
+          <td>undefined</td>
+          <td>'undefined'</td>
+          <td><button class="btn-primary" onclick="testValue(undefined)">测试</button></td>
+        </tr>
+        <tr>
+          <td><span class="type-badge type-object">null</span></td>
+          <td>null</td>
+          <td>'object'</td>
+          <td><button class="btn-primary" onclick="testValue(null)">测试</button></td>
+        </tr>
+        <tr>
+          <td><span class="type-badge type-symbol">Symbol</span></td>
+          <td>Symbol('id')</td>
+          <td>'symbol'</td>
+          <td><button class="btn-primary" onclick="testValue(Symbol('id'))">测试</button></td>
+        </tr>
+        <tr>
+          <td><span class="type-badge type-bigint">BigInt</span></td>
+          <td>9007199254740991n</td>
+          <td>'bigint'</td>
+          <td><button class="btn-primary" onclick="testValue(9007199254740991n)">测试</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">类型转换</h2>
+    <div class="code-block">
+      <span class="comment">// 转换为数字</span><br>
+      <span class="keyword">Number</span>(<span class="string">'42'</span>)       <span class="comment">// 42</span><br>
+      <span class="keyword">parseInt</span>(<span class="string">'42px'</span>)   <span class="comment">// 42</span><br>
+      <span class="keyword">parseFloat</span>(<span class="string">'3.14'</span>) <span class="comment">// 3.14</span><br><br>
+      <span class="comment">// 转换为字符串</span><br>
+      <span class="keyword">String</span>(<span class="number">42</span>)         <span class="comment">// '42'</span><br>
+      (<span class="number">42</span>).<span class="keyword">toString</span>()   <span class="comment">// '42'</span><br><br>
+      <span class="comment">// 转换为布尔值</span><br>
+      <span class="keyword">Boolean</span>(<span class="number">1</span>)        <span class="comment">// true</span><br>
+      <span class="keyword">Boolean</span>(<span class="number">0</span>)        <span class="comment">// false</span>
+    </div>
+    <button class="btn-primary" onclick="testConversion()">测试类型转换</button>
+    <div class="output" id="conversionOutput">点击按钮测试类型转换</div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">假值（Falsy Values）</h2>
+    <p>以下值在布尔上下文中会被转换为 false：</p>
+    <div class="output" id="falsyOutput"></div>
+    <button class="btn-primary" onclick="testFalsy()">测试假值</button>
+  </div>
+
+  <script>
+    function testTypes() {
+      const values = [
+        { value: 42, desc: '数字 42' },
+        { value: 'hello', desc: '字符串 "hello"' },
+        { value: true, desc: '布尔值 true' },
+        { value: undefined, desc: 'undefined' },
+        { value: null, desc: 'null' },
+        { value: {}, desc: '空对象 {}' },
+        { value: [], desc: '空数组 []' },
+        { value: function(){}, desc: '函数' },
+        { value: Symbol('id'), desc: 'Symbol' },
+        { value: 9007199254740991n, desc: 'BigInt' }
+      ];
+      
+      let result = '';
+      values.forEach(item => {
+        const type = typeof item.value;
+        result += `${item.desc}: typeof = '${type}'\n`;
+      });
+      
+      document.getElementById('typeOutput').textContent = result;
+    }
+
+    function testValue(value) {
+      const type = typeof value;
+      const isArray = Array.isArray(value);
+      let output = `值: ${JSON.stringify(value)}\n`;
+      output += `typeof 结果: '${type}'\n`;
+      if (isArray) {
+        output += `Array.isArray: true`;
+      }
+      alert(output);
+    }
+
+    function testConversion() {
+      let result = '';
+      
+      result += '=== 转换为数字 ===\n';
+      result += `Number('42') = ${Number('42')}\n`;
+      result += `Number('3.14') = ${Number('3.14')}\n`;
+      result += `Number('hello') = ${Number('hello')}\n`;
+      result += `parseInt('42px') = ${parseInt('42px')}\n`;
+      result += `parseFloat('3.14') = ${parseFloat('3.14')}\n\n`;
+      
+      result += '=== 转换为字符串 ===\n';
+      result += `String(42) = '${String(42)}'\n`;
+      result += `String(true) = '${String(true)}'\n`;
+      result += `(42).toString() = '${(42).toString()}'\n\n`;
+      
+      result += '=== 转换为布尔值 ===\n';
+      result += `Boolean(1) = ${Boolean(1)}\n`;
+      result += `Boolean(0) = ${Boolean(0)}\n`;
+      result += `Boolean('') = ${Boolean('')}\n`;
+      result += `Boolean('hello') = ${Boolean('hello')}\n`;
+      
+      document.getElementById('conversionOutput').textContent = result;
+    }
+
+    function testFalsy() {
+      const falsyValues = [
+        { value: false, desc: 'false' },
+        { value: 0, desc: '0' },
+        { value: -0, desc: '-0' },
+        { value: 0n, desc: '0n' },
+        { value: '', desc: '空字符串' },
+        { value: null, desc: 'null' },
+        { value: undefined, desc: 'undefined' },
+        { value: NaN, desc: 'NaN' }
+      ];
+      
+      let result = '';
+      falsyValues.forEach(item => {
+        result += `${item.desc}: Boolean() = ${Boolean(item.value)}\n`;
+      });
+      
+      document.getElementById('falsyOutput').textContent = result;
+    }
+
+    testFalsy();
+  </script>
+</body>
+</html>

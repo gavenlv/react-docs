@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sass 示例</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 40px 20px;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 40px;
+    }
+
+    .demo-section {
+      margin: 40px auto;
+      max-width: 1000px;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .demo-title {
+      font-size: 24px;
+      color: #cf649a;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #cf649a;
+    }
+
+    .demo-description {
+      background: #ffe6f2;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      border-left: 4px solid #cf649a;
+    }
+
+    .code-block {
+      background: #2c3e50;
+      color: #ecf0f1;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      overflow-x: auto;
+      margin: 15px 0;
+      line-height: 1.6;
+    }
+
+    .code-title {
+      color: #cf649a;
+      font-weight: bold;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .keyword {
+      color: #c792ea;
+    }
+
+    .variable {
+      color: #82aaff;
+    }
+
+    .function {
+      color: #82aaff;
+    }
+
+    .string {
+      color: #c3e88d;
+    }
+
+    .comment {
+      color: #676e95;
+    }
+
+    /* 编译后的 CSS 示例 */
+    .compiled-css {
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      margin: 15px 0;
+    }
+
+    .compiled-title {
+      color: #2c3e50;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    /* 按钮示例 */
+    .btn {
+      padding: 12px 30px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin: 10px;
+    }
+
+    .btn-primary {
+      background: #3498db;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #2980b9;
+    }
+
+    .btn-secondary {
+      background: #95a5a6;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #7f8c8d;
+    }
+
+    .btn-success {
+      background: #2ecc71;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #27ae60;
+    }
+
+    .btn-danger {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #c0392b;
+    }
+
+    /* 网格系统示例 */
+    .grid-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 15px;
+    }
+
+    .grid-row {
+      display: flex;
+      flex-wrap: wrap;
+      margin: 0 -15px;
+    }
+
+    .grid-col {
+      padding: 0 15px;
+      margin-bottom: 20px;
+    }
+
+    .col-6 {
+      width: 50%;
+    }
+
+    .col-4 {
+      width: 33.333%;
+    }
+
+    .col-3 {
+      width: 25%;
+    }
+
+    .grid-box {
+      background: #3498db;
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    /* 卡片组件 */
+    .card {
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .card-header {
+      background: #3498db;
+      color: white;
+      padding: 20px;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    .card-footer {
+      padding: 15px 20px;
+      border-top: 1px solid #eee;
+      background: #f9f9f9;
+    }
+
+    /* 响应式断点示例 */
+    .breakpoint-demo {
+      padding: 20px;
+      background: #ecf0f1;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    @media (max-width: 768px) {
+      .col-6, .col-4, .col-3 {
+        width: 100%;
+      }
+    }
+
+    .label {
+      display: inline-block;
+      background: #cf649a;
+      color: white;
+      padding: 3px 10px;
+      border-radius: 3px;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Sass/SCSS 示例</h1>
+
+  <div class="demo-section">
+    <h2 class="demo-title">1. 变量（Variables）</h2>
+    <div class="demo-description">
+      使用 <strong>$</strong> 符号定义变量
+    </div>
+
+    <div class="code-block">
+      <span class="code-title">SCSS 源码：</span>
+      <span class="comment">// 定义变量</span><br>
+      <span class="variable">$primary-color</span>: <span class="string">#3498db</span>;<br>
+      <span class="variable">$secondary-color</span>: <span class="string">#95a5a6</span>;<br>
+      <span class="variable">$border-radius</span>: <span class="string">8px</span>;<br><br>
+      
+      <span class="keyword">.button</span> {<br>
+      &nbsp;&nbsp;background: <span class="variable">$primary-color</span>;<br>
+      &nbsp;&nbsp;border-radius: <span class="variable">$border-radius</span>;<br>
+      }
+    </div>
+
+    <div class="compiled-css">
+      <div class="compiled-title">编译后的 CSS：</div>
+      .button {<br>
+      &nbsp;&nbsp;background: #3498db;<br>
+      &nbsp;&nbsp;border-radius: 8px;<br>
+      }
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">2. 嵌套（Nesting）</h2>
+    <div class="demo-description">
+      嵌套规则，使代码更清晰
+    </div>
+
+    <div class="code-block">
+      <span class="code-title">SCSS 源码：</span>
+      <span class="keyword">.card</span> {<br>
+      &nbsp;&nbsp;background: white;<br>
+      &nbsp;&nbsp;border-radius: <span class="string">8px</span>;<br><br>
+      &nbsp;&nbsp;<span class="keyword">&__header</span> {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;background: <span class="variable">$primary-color</span>;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;padding: <span class="string">20px</span>;<br>
+      &nbsp;&nbsp;}<br><br>
+      &nbsp;&nbsp;<span class="keyword">&__body</span> {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;padding: <span class="string">20px</span>;<br>
+      &nbsp;&nbsp;}<br><br>
+      &nbsp;&nbsp;<span class="keyword"> &:hover</span> {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;box-shadow: <span class="string">0 4px 12px rgba(0,0,0,0.1)</span>;<br>
+      &nbsp;&nbsp;}<br>
+      }
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>卡片标题</h3>
+      </div>
+      <div class="card-body">
+        <p>这是使用嵌套规则创建的卡片组件。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">3. Mixin（混入）</h2>
+    <div class="demo-description">
+      可重用的样式块
+    </div>
+
+    <div class="code-block">
+      <span class="code-title">SCSS 源码：</span>
+      <span class="comment">// 定义 mixin</span><br>
+      <span class="keyword">@mixin</span> <span class="function">flex-center</span> {<br>
+      &nbsp;&nbsp;display: flex;<br>
+      &nbsp;&nbsp;justify-content: center;<br>
+      &nbsp;&nbsp;align-items: center;<br>
+      }<br><br>
+      
+      <span class="keyword">@mixin</span> <span class="function">button-style</span>(<span class="variable">$bg-color</span>) {<br>
+      &nbsp;&nbsp;background: <span class="variable">$bg-color</span>;<br>
+      &nbsp;&nbsp;color: white;<br>
+      &nbsp;&nbsp;padding: <span class="string">12px 30px</span>;<br>
+      &nbsp;&nbsp;border-radius: <span class="string">5px</span>;<br>
+      }<br><br>
+      
+      <span class="keyword">.container</span> {<br>
+      &nbsp;&nbsp;<span class="keyword">@include</span> <span class="function">flex-center</span>;<br>
+      }<br><br>
+      
+      <span class="keyword">.btn-primary</span> {<br>
+      &nbsp;&nbsp;<span class="keyword">@include</span> <span class="function">button-style</span>(<span class="variable">$primary-color</span>);<br>
+      }
+    </div>
+
+    <div>
+      <button class="btn btn-primary">Primary Button</button>
+      <button class="btn btn-secondary">Secondary Button</button>
+      <button class="btn btn-success">Success Button</button>
+      <button class="btn btn-danger">Danger Button</button>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">4. 函数（Functions）</h2>
+    <div class="demo-description">
+      计算和返回值
+    </div>
+
+    <div class="code-block">
+      <span class="code-title">SCSS 源码：</span>
+      <span class="comment">// 定义函数</span><br>
+      <span class="keyword">@function</span> <span class="function">calculate-rem</span>(<span class="variable">$px</span>) {<br>
+      &nbsp;&nbsp;<span class="keyword">@return</span> <span class="variable">$px</span> / <span class="string">16px</span> * <span class="string">1rem</span>;<br>
+      }<br><br>
+      
+      <span class="keyword">@function</span> <span class="function">lighten-color</span>(<span class="variable">$color</span>, <span class="variable">$amount</span>) {<br>
+      &nbsp;&nbsp;<span class="keyword">@return</span> <span class="function">lighten</span>(<span class="variable">$color</span>, <span class="variable">$amount</span>);<br>
+      }<br><br>
+      
+      <span class="keyword">.text</span> {<br>
+      &nbsp;&nbsp;font-size: <span class="function">calculate-rem</span>(<span class="string">18px</span>); <span class="comment">// 1.125rem</span><br>
+      }
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">5. 循环（Loops）</h2>
+    <div class="demo-description">
+      使用 @for、@each、@while 生成样式
+    </div>
+
+    <div class="code-block">
+      <span class="code-title">SCSS 源码：</span>
+      <span class="comment">// @for 循环</span><br>
+      <span class="keyword">@for</span> <span class="variable">$i</span> <span class="keyword">from</span> <span class="string">1</span> <span class="keyword">through</span> <span class="string">4</span> {<br>
+      &nbsp;&nbsp;<span class="keyword">.col-#{$i}</span> {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;width: <span class="string">100%</span> / <span class="variable">$i</span>;<br>
+      &nbsp;&nbsp;}<br>
+      }
+    </div>
+
+    <div class="grid-container">
+      <div class="grid-row">
+        <div class="grid-col col-4">
+          <div class="grid-box">col-4</div>
+        </div>
+        <div class="grid-col col-4">
+          <div class="grid-box">col-4</div>
+        </div>
+        <div class="grid-col col-4">
+          <div class="grid-box">col-4</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">6. 条件语句（Conditionals）</h2>
+    <div class="demo-description">
+      使用 @if、@else 控制样式
+    </div>
+
+    <div class="code-block">
+      <span class="code-title">SCSS 源码：</span>
+      <span class="keyword">@mixin</span> <span class="function">theme-colors</span>(<span class="variable">$theme</span>) {<br>
+      &nbsp;&nbsp;<span class="keyword">@if</span> <span class="variable">$theme</span> == <span class="string">"dark"</span> {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;background: <span class="string">#2c3e50</span>;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;color: <span class="string">#ecf0f1</span>;<br>
+      &nbsp;&nbsp;} <span class="keyword">@else</span> {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;background: <span class="string">#ecf0f1</span>;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;color: <span class="string">#2c3e50</span>;<br>
+      &nbsp;&nbsp;}<br>
+      }
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">7. 导入（Import）</h2>
+    <div class="demo-description">
+      模块化管理样式文件
+    </div>
+
+    <div class="code-block">
+      <span class="code-title">文件结构：</span>
+      styles/<br>
+      ├── variables.scss<br>
+      ├── mixins.scss<br>
+      ├── reset.scss<br>
+      ├── components/<br>
+      │   ├── buttons.scss<br>
+      │   ├── cards.scss<br>
+      │   └── forms.scss<br>
+      └── main.scss<br><br>
+
+      <span class="code-title">main.scss：</span>
+      <span class="keyword">@import</span> <span class="string">'variables'</span>;<br>
+      <span class="keyword">@import</span> <span class="string">'mixins'</span>;<br>
+      <span class="keyword">@import</span> <span class="string">'reset'</span>;<br>
+      <span class="keyword">@import</span> <span class="string">'components/buttons'</span>;<br>
+      <span class="keyword">@import</span> <span class="string">'components/cards'</span>;<br>
+      <span class="keyword">@import</span> <span class="string">'components/forms'</span>;
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">8. 继承（Extend）</h2>
+    <div class="demo-description">
+      继承其他选择器的样式
+    </div>
+
+    <div class="code-block">
+      <span class="code-title">SCSS 源码：</span>
+      <span class="keyword">.message</span> {<br>
+      &nbsp;&nbsp;padding: <span class="string">15px</span>;<br>
+      &nbsp;&nbsp;border-radius: <span class="string">5px</span>;<br>
+      }<br><br>
+      
+      <span class="keyword">.success-message</span> {<br>
+      &nbsp;&nbsp;<span class="keyword">@extend</span> <span class="string">.message</span>;<br>
+      &nbsp;&nbsp;background: <span class="string">#d4edda</span>;<br>
+      &nbsp;&nbsp;color: <span class="string">#155724</span>;<br>
+      }
+    </div>
+  </div>
+</body>
+</html>

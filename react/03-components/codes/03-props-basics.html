@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>03 - Props 基础</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #f5f5f5; }
+    .demo { background: white; padding: 20px; border-radius: 8px; margin: 10px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .greeting { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; text-align: center; }
+    .greeting h1 { margin: 0; font-size: 2em; }
+    .greeting p { margin: 10px 0 0 0; opacity: 0.9; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    // 定义接收 props 的组件
+    function Greeting(props) {
+      return <h1>Hello, {props.name}!</h1>;
+    }
+
+    // 解构 props（推荐）
+    function GreetingDestructured({ name, age }) {
+      return (
+        <div className="greeting">
+          <h1>Hello, {name}!</h1>
+          <p>You are {age} years old.</p>
+        </div>
+      );
+    }
+
+    function App() {
+      return (
+        <div>
+          <h1>Props 基础用法</h1>
+          
+          <div className="demo">
+            <h3>使用 Props（传统方式）</h3>
+            <Greeting name="Alice" />
+          </div>
+          
+          <div className="demo">
+            <h3>解构 Props（推荐方式）</h3>
+            <GreetingDestructured name="Bob" age={30} />
+          </div>
+          
+          <div className="demo">
+            <h3>多个组件实例</h3>
+            <GreetingDestructured name="Charlie" age={35} />
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>

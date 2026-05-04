@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>链接与图片演示</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      background: #f5f5f5;
+      padding: 40px 20px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    h1 { color: #e44d26; border-bottom: 3px solid #e44d26; padding-bottom: 10px; margin-bottom: 30px; }
+    h2 { color: #f16529; margin: 30px 0 15px; }
+    .demo-box {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    a {
+      color: #e44d26;
+      text-decoration: none;
+      padding: 5px 10px;
+      background: #fff5f0;
+      border-radius: 4px;
+      display: inline-block;
+      margin: 5px;
+    }
+    a:hover { background: #e44d26; color: white; }
+    .link-types { display: flex; flex-wrap: wrap; gap: 10px; }
+    .nav-demo {
+      background: #333;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+    }
+    .nav-demo a {
+      color: white;
+      background: transparent;
+      padding: 10px 15px;
+    }
+    .nav-demo a:hover { background: #e44d26; }
+    .image-demo img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+    .placeholder-img {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      height: 200px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 18px;
+    }
+    .path-demo {
+      background: #282c34;
+      color: #abb2bf;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+    }
+    .path-demo p { margin: 8px 0; }
+    .path-demo .comment { color: #5c6370; }
+    .path-demo .path { color: #98c379; }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
+    }
+    .gallery-item {
+      background: #f0f0f0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .gallery-item .img-placeholder {
+      height: 150px;
+      background: linear-gradient(45deg, #f16529, #e44d26);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 24px;
+    }
+    .gallery-item p { padding: 10px; font-size: 14px; color: #666; }
+  </style>
+</head>
+<body>
+  <h1>链接与图片演示</h1>
+  
+  <div class="demo-box">
+    <h2>链接类型</h2>
+    <div class="link-types">
+      <a href="https://www.baidu.com" target="_blank">外部链接</a>
+      <a href="#section1">页内锚点</a>
+      <a href="mailto:test@example.com">邮件链接</a>
+      <a href="tel:+8613800000000">电话链接</a>
+      <a href="#" download>下载链接</a>
+    </div>
+  </div>
+  
+  <div class="demo-box">
+    <h2>导航示例</h2>
+    <nav class="nav-demo">
+      <a href="#">首页</a>
+      <a href="#">产品</a>
+      <a href="#">关于我们</a>
+      <a href="#">联系</a>
+    </nav>
+  </div>
+  
+  <div class="demo-box">
+    <h2>路径示例</h2>
+    <div class="path-demo">
+      <p><span class="comment">&lt;!-- 绝对路径 --&gt;</span></p>
+      <p>&lt;img src="<span class="path">https://example.com/image.jpg</span>"&gt;</p>
+      <br>
+      <p><span class="comment">&lt;!-- 相对路径 --&gt;</span></p>
+      <p>&lt;img src="<span class="path">image.jpg</span>"&gt; <span class="comment">同级目录</span></p>
+      <p>&lt;img src="<span class="path">images/logo.png</span>"&gt; <span class="comment">下级目录</span></p>
+      <p>&lt;img src="<span class="path">../images/logo.png</span>"&gt; <span class="comment">上级目录</span></p>
+    </div>
+  </div>
+  
+  <div class="demo-box">
+    <h2>图片示例</h2>
+    <div class="image-demo">
+      <div class="placeholder-img">
+        图片占位符 (实际使用时替换为真实图片)
+      </div>
+      <p><code>&lt;img src="image.jpg" alt="图片描述" loading="lazy"&gt;</code></p>
+    </div>
+  </div>
+  
+  <div class="demo-box">
+    <h2>图片画廊</h2>
+    <div class="gallery">
+      <div class="gallery-item">
+        <div class="img-placeholder">🖼️</div>
+        <p>风景照片</p>
+      </div>
+      <div class="gallery-item">
+        <div class="img-placeholder">📷</div>
+        <p>人物照片</p>
+      </div>
+      <div class="gallery-item">
+        <div class="img-placeholder">🎨</div>
+        <p>艺术作品</p>
+      </div>
+      <div class="gallery-item">
+        <div class="img-placeholder">🌆</div>
+        <p>城市风光</p>
+      </div>
+    </div>
+  </div>
+  
+  <section id="section1">
+    <h2>锚点目标</h2>
+    <p>这是锚点跳转到的位置。点击上面的"页内锚点"链接可以跳转到这里。</p>
+  </section>
+</body>
+</html>

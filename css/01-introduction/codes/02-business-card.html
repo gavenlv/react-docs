@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人名片</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .avatar img {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      border: 5px solid #667eea;
+      margin-bottom: 20px;
+      object-fit: cover;
+    }
+
+    .name {
+      color: #2c3e50;
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .title {
+      color: #667eea;
+      font-size: 18px;
+      margin-bottom: 15px;
+    }
+
+    .bio {
+      color: #7f8c8d;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .skills {
+      margin-bottom: 25px;
+    }
+
+    .skill {
+      display: inline-block;
+      background: #f0f0f0;
+      color: #667eea;
+      padding: 8px 16px;
+      border-radius: 20px;
+      margin: 5px;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+
+    .skill:hover {
+      background: #667eea;
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .contact a {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      text-decoration: none;
+      padding: 12px 30px;
+      border-radius: 25px;
+      font-weight: bold;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .contact a:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="avatar">
+      <img src="https://via.placeholder.com/150" alt="头像">
+    </div>
+    <h1 class="name">张三</h1>
+    <p class="title">前端开发工程师</p>
+    <p class="bio">热爱编程，专注于 Web 开发技术，追求极致的用户体验</p>
+    <div class="skills">
+      <span class="skill">HTML</span>
+      <span class="skill">CSS</span>
+      <span class="skill">JavaScript</span>
+      <span class="skill">React</span>
+    </div>
+    <div class="contact">
+      <a href="mailto:zhangsan@example.com">联系我</a>
+    </div>
+  </div>
+</body>
+</html>

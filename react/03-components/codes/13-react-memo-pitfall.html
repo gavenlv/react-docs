@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>13 - React.memo 注意事项</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #f5f5f5; }
+    .demo { background: white; padding: 20px; border-radius: 8px; margin: 10px 0; }
+    .warning { background: #fff3e0; border-left: 4px solid #ff9800; }
+    .correct { background: #e8f5e9; border-left: 4px solid #4caf50; }
+    button { padding: 10px 20px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; background: #2196f3; color: white; }
+    button:hover { background: #1976d2; }
+    .log-box { background: #263238; color: #aed581; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; max-height: 100px; overflow-y: auto; margin-top: 10px; }
+    pre { background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    // React.memo 是浅比较！
+    const MemoizedChild = React.memo(function Child({ style, items }) {
+      React.useEffect(() => {
+        const logs = document.getElementById('logs');
+        if (logs) {
+          const entry = document.createElement('div');
+          entry.textContent = `Child 重新渲染了 (style 和 items 都是新引用)`;
+          logs.appendChild(entry);
+          logs.scrollTop = logs.scrollHeight;
+        }
+      });
+      return <div style={style}>Child Component</div>;
+    });
+
+    function App() {
+      const [count, setCount] = React.useState(0);
+      
+      // ⚠️ 每次渲染都创建新对象 → 浅比较失败 → 子组件重新渲染
+      const style = { color: 'red' };
+      
+      // ⚠️ 每次渲染都创建新数组 → 浅比较失败 → 子组件重新渲染
+      const items = [1, 2, 3];
+
+      // ✅ 正确做法：使用 useMemo 缓存对象引用
+      // const style = React.useMemo(() => ({ color: 'red' }), []);
+      // const items = React.useMemo(() => [1, 2, 3], []);
+
+      return (
+        <div>
+          <h1>React.memo 注意事项</h1>
+          
+          <div className="demo warning">
+            <h3>⚠️ React.memo 是浅比较</h3>
+            <p>如果 props 是对象或数组，即使内容没变但引用变了，也会重新渲染。</p>
+            <pre>{`// ⚠️ 每次渲染都创建新对象
+<MemoizedChild style={{ color: 'red' }} />
+
+// ✅ 用 useMemo 缓存对象引用
+const style = useMemo(() => ({ color: 'red' }), []);
+<MemoizedChild style={style} />`}</pre>
+          </div>
+          
+          <div className="demo">
+            <h3>演示</h3>
+            <button onClick={() => setCount(c => c + 1)}>增加计数: {count}</button>
+            <MemoizedChild style={style} items={items} />
+            <div id="logs" className="log-box"></div>
+            <p style={{fontSize: '12px', color: '#666'}}>每次点击按钮，Child 都会重新渲染，因为 style 和 items 是新对象。</p>
+          </div>
+          
+          <div className="demo correct">
+            <h3>✅ 正确做法</h3>
+            <p>使用 <strong>useMemo</strong> 或 <strong>useCallback</strong> 缓存引用。</p>
+            <pre>{`const style = useMemo(() => ({ color: 'red' }), []);
+const items = useMemo(() => [1, 2, 3], []);`}</pre>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>

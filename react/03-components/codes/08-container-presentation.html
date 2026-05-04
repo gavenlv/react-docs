@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>08 - 容器组件与展示组件</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #f5f5f5; }
+    .demo { background: white; padding: 20px; border-radius: 8px; margin: 10px 0; }
+    ul { list-style: none; padding: 0; }
+    li { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; }
+    li:hover { background: #f5f5f5; }
+    li:last-child { border-bottom: none; }
+    .pattern-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-bottom: 10px; }
+    .presentational { background: #e3f2fd; color: #1976d2; }
+    .container { background: #fff3e0; color: #f57c00; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    // 模拟用户数据
+    const mockUsers = [
+      { id: 1, name: '张三', email: 'zhangsan@example.com' },
+      { id: 2, name: '李四', email: 'lisi@example.com' },
+      { id: 3, name: '王五', email: 'wangwu@example.com' },
+    ];
+
+    // 展示组件（Presentational）：只关注 UI 外观
+    function UserList({ users, onUserClick }) {
+      return (
+        <ul>
+          {users.map(user => (
+            <li key={user.id} onClick={() => onUserClick(user.id)}>
+              <strong>{user.name}</strong> - {user.email}
+            </li>
+          ))}
+        </ul>
+      );
+    }
+
+    // 容器组件（Container）：关注数据和逻辑
+    function UserListContainer() {
+      const [users, setUsers] = React.useState([]);
+      const [loading, setLoading] = React.useState(true);
+
+      React.useEffect(() => {
+        // 模拟 API 调用
+        setTimeout(() => {
+          setUsers(mockUsers);
+          setLoading(false);
+        }, 500);
+      }, []);
+
+      const handleUserClick = (userId) => {
+        alert(`点击了用户 ID: ${userId}`);
+      };
+
+      if (loading) {
+        return <div>加载中...</div>;
+      }
+
+      return <UserList users={users} onUserClick={handleUserClick} />;
+    }
+
+    function App() {
+      return (
+        <div>
+          <h1>容器组件与展示组件模式</h1>
+          
+          <div className="demo">
+            <span className="pattern-badge presentational">展示组件</span>
+            <span className="pattern-badge container">容器组件</span>
+            <UserListContainer />
+          </div>
+          
+          <div className="demo" style={{background: '#f3e5f5', borderLeft: '4px solid #9c27b0'}}>
+            <h3>💡 模式说明</h3>
+            <p><strong>展示组件：</strong>关注 UI 外观，接收 props，渲染 UI。不直接处理数据逻辑。</p>
+            <p><strong>容器组件：</strong>关注数据和逻辑，处理 API 调用、状态管理，将数据传给展示组件。</p>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>

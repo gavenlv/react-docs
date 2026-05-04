@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>09 - 可复用按钮组件</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #f5f5f5; }
+    .demo { background: white; padding: 20px; border-radius: 8px; margin: 10px 0; }
+    .demo-section { background: #fafafa; padding: 15px; border-radius: 4px; margin: 15px 0; }
+    .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: all 0.2s; margin: 5px; }
+    .btn-blue { background: #2196f3; color: white; }
+    .btn-green { background: #4caf50; color: white; }
+    .btn-red { background: #f44336; color: white; }
+    .btn-purple { background: #9c27b0; color: white; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    // ❌ 硬编码，不可复用
+    function SubmitButton() {
+      return <button className="btn-blue">提交</button>;
+    }
+
+    // ✅ 可配置，可复用
+    function Button({ 
+      label, 
+      color = 'blue', 
+      size = 'medium',
+      disabled = false,
+      onClick 
+    }) {
+      return (
+        <button 
+          className={`btn-${color}`}
+          disabled={disabled}
+          onClick={onClick}
+        >
+          {label}
+        </button>
+      );
+    }
+
+    function App() {
+      return (
+        <div>
+          <h1>可复用组件设计</h1>
+          
+          <div className="demo">
+            <h3>❌ 错误：硬编码按钮</h3>
+            <div className="demo-section">
+              <SubmitButton />
+              <p>只能用于提交操作，无法复用</p>
+            </div>
+          </div>
+          
+          <div className="demo">
+            <h3>✅ 正确：可配置按钮</h3>
+            <div className="demo-section">
+              <Button label="主要操作" color="blue" onClick={() => alert('点击了!')} />
+              <Button label="成功" color="green" onClick={() => alert('成功!')} />
+              <Button label="危险" color="red" onClick={() => alert('危险!')} />
+              <Button label="禁用" disabled />
+            </div>
+          </div>
+          
+          <div className="demo" style={{background: '#e8f5e9', borderLeft: '4px solid #4caf50'}}>
+            <h3>💡 设计原则</h3>
+            <p>设计组件时，应尽量让组件<strong>可配置、可复用</strong>。</p>
+            <p>通过 props 参数化，让同一个组件可以满足不同的使用场景。</p>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Promise 演示</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 40px 20px;
+      background: #f5f5f5;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 { text-align: center; color: #2c3e50; margin-bottom: 40px; }
+    .demo-section {
+      margin: 30px 0;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .demo-title {
+      font-size: 24px;
+      color: #f7df1e;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f7df1e;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 14px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+      transition: all 0.3s;
+      background: #f7df1e;
+      color: #000;
+    }
+    button:hover { background: #e5ce1b; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
+    .output {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 15px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      white-space: pre-wrap;
+    }
+    .promise-state {
+      display: inline-block;
+      padding: 5px 15px;
+      border-radius: 15px;
+      font-size: 14px;
+      font-weight: bold;
+      margin: 10px 5px;
+    }
+    .state-pending { background: #fff3cd; color: #856404; }
+    .state-fulfilled { background: #d4edda; color: #155724; }
+    .state-rejected { background: #f8d7da; color: #721c24; }
+    .task-list { margin: 20px 0; }
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      background: #f8f9fa;
+      margin: 5px 0;
+      border-radius: 5px;
+    }
+    .task-item.completed { background: #d4edda; }
+    .task-spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #ddd;
+      border-top-color: #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <h1>Promise 演示</h1>
+  
+  <div class="demo-section">
+    <h2 class="demo-title">Promise 状态</h2>
+    <button onclick="createPending()">Pending</button>
+    <button onclick="createFulfilled()">Fulfilled</button>
+    <button onclick="createRejected()">Rejected</button>
+    <div id="stateDisplay">
+      <span class="promise-state state-pending">Pending</span>
+    </div>
+    <div class="output" id="stateOutput">点击按钮创建不同状态的 Promise</div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">链式调用</h2>
+    <button onclick="chainDemo()">执行链式调用</button>
+    <div class="output" id="chainOutput">点击按钮演示链式调用</div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">async/await</h2>
+    <button onclick="asyncDemo()" id="asyncBtn">执行 async 函数</button>
+    <div class="output" id="asyncOutput">点击按钮演示 async/await</div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">Promise.all</h2>
+    <button onclick="promiseAllDemo()">并行执行所有任务</button>
+    <div class="task-list" id="allTaskList"></div>
+    <div class="output" id="allOutput">点击按钮演示 Promise.all</div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">Promise.race</h2>
+    <button onclick="promiseRaceDemo()">开始竞速</button>
+    <div class="task-list" id="raceTaskList"></div>
+    <div class="output" id="raceOutput">点击按钮演示 Promise.race</div>
+  </div>
+
+  <script>
+    function delay(ms, value) {
+      return new Promise(resolve => setTimeout(() => resolve(value), ms));
+    }
+
+    function createPending() {
+      document.getElementById('stateDisplay').innerHTML = 
+        '<span class="promise-state state-pending">Pending</span>';
+      document.getElementById('stateOutput').textContent = 
+        'Promise 处于等待状态，尚未完成';
+    }
+
+    function createFulfilled() {
+      Promise.resolve('成功数据')
+        .then(data => {
+          document.getElementById('stateDisplay').innerHTML = 
+            '<span class="promise-state state-fulfilled">Fulfilled</span>';
+          document.getElementById('stateOutput').textContent = 
+            `Promise 已兑现\n结果: ${data}`;
+        });
+    }
+
+    function createRejected() {
+      Promise.reject('错误信息')
+        .catch(error => {
+          document.getElementById('stateDisplay').innerHTML = 
+            '<span class="promise-state state-rejected">Rejected</span>';
+          document.getElementById('stateOutput').textContent = 
+            `Promise 已拒绝\n错误: ${error}`;
+        });
+    }
+
+    function chainDemo() {
+      const output = document.getElementById('chainOutput');
+      output.textContent = '开始执行...\n';
+      
+      delay(500, 1)
+        .then(value => {
+          output.textContent += `第一步: ${value}\n`;
+          return value + 1;
+        })
+        .then(value => {
+          output.textContent += `第二步: ${value}\n`;
+          return value * 2;
+        })
+        .then(value => {
+          output.textContent += `第三步: ${value}\n`;
+          output.textContent += '链式调用完成！';
+        });
+    }
+
+    async function asyncDemo() {
+      const btn = document.getElementById('asyncBtn');
+      const output = document.getElementById('asyncOutput');
+      
+      btn.disabled = true;
+      output.textContent = '开始执行...\n';
+      
+      try {
+        output.textContent += '等待第一个数据...\n';
+        const data1 = await delay(1000, '数据A');
+        output.textContent += `收到: ${data1}\n`;
+        
+        output.textContent += '等待第二个数据...\n';
+        const data2 = await delay(1000, '数据B');
+        output.textContent += `收到: ${data2}\n`;
+        
+        output.textContent += '所有数据加载完成！';
+      } catch (error) {
+        output.textContent += `错误: ${error}`;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function promiseAllDemo() {
+      const taskList = document.getElementById('allTaskList');
+      const output = document.getElementById('allOutput');
+      
+      taskList.innerHTML = '';
+      output.textContent = '执行中...';
+      
+      const tasks = [
+        { name: '任务1', duration: 1000 },
+        { name: '任务2', duration: 1500 },
+        { name: '任务3', duration: 800 }
+      ];
+      
+      const elements = tasks.map(task => {
+        const div = document.createElement('div');
+        div.className = 'task-item';
+        div.innerHTML = `<div class="task-spinner"></div><span>${task.name}</span>`;
+        taskList.appendChild(div);
+        return div;
+      });
+      
+      const promises = tasks.map((task, i) => 
+        delay(task.duration, task.name).then(result => {
+          elements[i].classList.add('completed');
+          elements[i].querySelector('.task-spinner').remove();
+          return result;
+        })
+      );
+      
+      try {
+        const results = await Promise.all(promises);
+        output.textContent = `所有任务完成！\n结果: ${JSON.stringify(results)}`;
+      } catch (error) {
+        output.textContent = `错误: ${error}`;
+      }
+    }
+
+    async function promiseRaceDemo() {
+      const taskList = document.getElementById('raceTaskList');
+      const output = document.getElementById('raceOutput');
+      
+      taskList.innerHTML = '';
+      output.textContent = '竞速开始...';
+      
+      const tasks = [
+        { name: '选手A', duration: 1500 },
+        { name: '选手B', duration: 1000 },
+        { name: '选手C', duration: 2000 }
+      ];
+      
+      const elements = tasks.map(task => {
+        const div = document.createElement('div');
+        div.className = 'task-item';
+        div.innerHTML = `<div class="task-spinner"></div><span>${task.name}</span>`;
+        taskList.appendChild(div);
+        return div;
+      });
+      
+      const promises = tasks.map((task, i) => 
+        delay(task.duration, task.name).then(result => {
+          elements[i].classList.add('completed');
+          elements[i].querySelector('.task-spinner')?.remove();
+          return { result, index: i };
+        })
+      );
+      
+      const winner = await Promise.race(promises);
+      output.textContent = `获胜者: ${winner.result}`;
+      
+      elements[winner.index].style.background = '#667eea';
+      elements[winner.index].style.color = 'white';
+    }
+  </script>
+</body>
+</html>

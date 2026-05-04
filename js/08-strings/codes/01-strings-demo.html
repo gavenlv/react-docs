@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>字符串演示</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 40px 20px;
+      background: #f5f5f5;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 { text-align: center; color: #2c3e50; margin-bottom: 40px; }
+    .demo-section {
+      margin: 30px 0;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .demo-title {
+      font-size: 24px;
+      color: #f7df1e;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f7df1e;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 14px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+      transition: all 0.3s;
+      background: #f7df1e;
+      color: #000;
+    }
+    button:hover { background: #e5ce1b; }
+    .output {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 15px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      white-space: pre-wrap;
+    }
+    .input-group { margin: 10px 0; }
+    .input-group input, .input-group textarea {
+      padding: 10px;
+      font-size: 14px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      width: 100%;
+      max-width: 500px;
+    }
+    .input-group input:focus, .input-group textarea:focus {
+      border-color: #f7df1e;
+      outline: none;
+    }
+    .method-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
+      margin: 20px 0;
+    }
+    .method-btn {
+      padding: 12px;
+      text-align: center;
+      background: #f8f9fa;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 13px;
+    }
+    .method-btn:hover {
+      border-color: #f7df1e;
+      background: #fffbe6;
+    }
+    .validation-result {
+      padding: 10px 15px;
+      border-radius: 5px;
+      margin: 5px 0;
+    }
+    .valid { background: #e8f5e9; color: #2e7d32; }
+    .invalid { background: #ffebee; color: #c62828; }
+  </style>
+</head>
+<body>
+  <h1>字符串演示</h1>
+  
+  <div class="demo-section">
+    <h2 class="demo-title">字符串方法</h2>
+    <div class="input-group">
+      <input type="text" id="strInput" value="Hello, World!" placeholder="输入字符串">
+    </div>
+    <div class="method-grid">
+      <div class="method-btn" onclick="demoLength()">length</div>
+      <div class="method-btn" onclick="demoCharAt()">charAt()</div>
+      <div class="method-btn" onclick="demoSlice()">slice()</div>
+      <div class="method-btn" onclick="demoSubstring()">substring()</div>
+      <div class="method-btn" onclick="demoSplit()">split()</div>
+      <div class="method-btn" onclick="demoReplace()">replace()</div>
+      <div class="method-btn" onclick="demoToUpper()">toUpperCase()</div>
+      <div class="method-btn" onclick="demoToLower()">toLowerCase()</div>
+      <div class="method-btn" onclick="demoTrim()">trim()</div>
+      <div class="method-btn" onclick="demoIncludes()">includes()</div>
+      <div class="method-btn" onclick="demoStartsWith()">startsWith()</div>
+      <div class="method-btn" onclick="demoEndsWith()">endsWith()</div>
+      <div class="method-btn" onclick="demoIndexOf()">indexOf()</div>
+      <div class="method-btn" onclick="demoRepeat()">repeat()</div>
+      <div class="method-btn" onclick="demoPadStart()">padStart()</div>
+    </div>
+    <div class="output" id="methodOutput">输入字符串后点击方法查看效果</div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">模板字符串</h2>
+    <div class="input-group">
+      <label>姓名：</label>
+      <input type="text" id="tplName" value="张三">
+    </div>
+    <div class="input-group">
+      <label>年龄：</label>
+      <input type="number" id="tplAge" value="25">
+    </div>
+    <div class="input-group">
+      <label>城市：</label>
+      <input type="text" id="tplCity" value="北京">
+    </div>
+    <button onclick="generateTemplate()">生成模板</button>
+    <div class="output" id="templateOutput"></div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">正则表达式验证</h2>
+    <div class="input-group">
+      <label>邮箱：</label>
+      <input type="text" id="validateEmail" placeholder="输入邮箱">
+      <div id="emailResult"></div>
+    </div>
+    <div class="input-group">
+      <label>手机号：</label>
+      <input type="text" id="validatePhone" placeholder="输入手机号">
+      <div id="phoneResult"></div>
+    </div>
+    <div class="input-group">
+      <label>身份证：</label>
+      <input type="text" id="validateIdCard" placeholder="输入身份证号">
+      <div id="idCardResult"></div>
+    </div>
+    <button onclick="validateAll()">验证全部</button>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">字符串工具</h2>
+    <div class="input-group">
+      <textarea id="toolInput" rows="3" placeholder="输入文本">hello-world</textarea>
+    </div>
+    <button onclick="toolCamelCase()">转驼峰</button>
+    <button onclick="toolKebabCase()">转短横线</button>
+    <button onclick="toolCapitalize()">首字母大写</button>
+    <button onclick="toolTruncate()">截断(10字符)</button>
+    <button onclick="toolMask()">遮罩</button>
+    <button onclick="toolEscape()">HTML转义</button>
+    <div class="output" id="toolOutput">点击按钮查看效果</div>
+  </div>
+
+  <script>
+    function getStr() {
+      return document.getElementById('strInput').value;
+    }
+
+    function demoLength() {
+      document.getElementById('methodOutput').textContent = 
+        `字符串: "${getStr()}"\nlength: ${getStr().length}`;
+    }
+
+    function demoCharAt() {
+      const str = getStr();
+      document.getElementById('methodOutput').textContent = 
+        `字符串: "${str}"\ncharAt(0): '${str.charAt(0)}'\ncharAt(7): '${str.charAt(7)}'\nat(-1): '${str.at(-1)}'`;
+    }
+
+    function demoSlice() {
+      const str = getStr();
+      document.getElementById('methodOutput').textContent = 
+        `字符串: "${str}"\nslice(0, 5): '${str.slice(0, 5)}'\nslice(-6): '${str.slice(-6)}'`;
+    }
+
+    function demoSubstring() {
+      const str = getStr();
+      document.getElementById('methodOutput').textContent = 
+        `字符串: "${str}"\nsubstring(0, 5): '${str.substring(0, 5)}'\nsubstring(7): '${str.substring(7)}'`;
+    }
+
+    function demoSplit() {
+      const str = getStr();
+      document.getElementById('methodOutput').textContent = 
+        `字符串: "${str}"\nsplit(', '): ${JSON.stringify(str.split(', '))}\nsplit(''): ${JSON.stringify(str.split(''))}`;
+    }
+
+    function demoReplace() {
+      const str = getStr();
+      document.getElementById('methodOutput').textContent = 
+        `字符串: "${str}"\nreplace('World', 'JS'): '${str.replace('World', 'JS')}'\nreplaceAll('l', 'L'): '${str.replaceAll('l', 'L')}'`;
+    }
+
+    function demoToUpper() {
+      document.getElementById('methodOutput').textContent = 
+        `字符串: "${getStr()}"\ntoUpperCase(): '${getStr().toUpperCase()}'`;
+    }
+
+    function demoToLower() {
+      document.getElementById('methodOutput').textContent = 
+        `字符串: "${getStr()}"\ntoLowerCase(): '${getStr().toLowerCase()}'`;
+    }
+
+    function demoTrim() {
+      const str = '  Hello, World!  ';
+      document.getElementById('methodOutput').textContent = 
+        `字符串: "${str}"\ntrim(): '${str.trim()}'\ntrimStart(): '${str.trimStart()}'\ntrimEnd(): '${str.trimEnd()}'`;
+    }
+
+    function demoIncludes() {
+      const str = getStr();
+      document.getElementById('methodOutput').textContent = 
+        `字符串: "${str}"\nincludes('World'): ${str.includes('World')}\nincludes('world'): ${str.includes('world')}`;
+    }
+
+    function demoStartsWith() {
+      const str = getStr();
+      document.getElementById('methodOutput').textContent = 
+        `字符串: "${str}"\nstartsWith('Hello'): ${str.startsWith('Hello')}\nstartsWith('World'): ${str.startsWith('World')}`;
+    }
+
+    function demoEndsWith() {
+      const str = getStr();
+      document.getElementById('methodOutput').textContent = 
+        `字符串: "${str}"\nendsWith('!'): ${str.endsWith('!')}\nendsWith('World'): ${str.endsWith('World')}`;
+    }
+
+    function demoIndexOf() {
+      const str = getStr();
+      document.getElementById('methodOutput').textContent = 
+        `字符串: "${str}"\nindexOf('o'): ${str.indexOf('o')}\nlastIndexOf('o'): ${str.lastIndexOf('o')}`;
+    }
+
+    function demoRepeat() {
+      const str = 'Hi';
+      document.getElementById('methodOutput').textContent = 
+        `字符串: "${str}"\nrepeat(3): '${str.repeat(3)}'`;
+    }
+
+    function demoPadStart() {
+      const str = '5';
+      document.getElementById('methodOutput').textContent = 
+        `字符串: "${str}"\npadStart(3, '0'): '${str.padStart(3, '0')}'\npadEnd(3, '0'): '${str.padEnd(3, '0')}'`;
+    }
+
+    function generateTemplate() {
+      const name = document.getElementById('tplName').value;
+      const age = document.getElementById('tplAge').value;
+      const city = document.getElementById('tplCity').value;
+      
+      const result = `
+个人信息：
+=====================================
+姓名：${name}
+年龄：${age}岁
+城市：${city}
+=====================================
+简介：你好，我是${name}，今年${age}岁，来自${city}。
+      `.trim();
+      
+      document.getElementById('templateOutput').textContent = result;
+    }
+
+    const patterns = {
+      email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+      phone: /^1[3-9]\d{9}$/,
+      idCard: /^\d{17}[\dXx]$/
+    };
+
+    function validateAll() {
+      const email = document.getElementById('validateEmail').value;
+      const phone = document.getElementById('validatePhone').value;
+      const idCard = document.getElementById('validateIdCard').value;
+      
+      const emailValid = patterns.email.test(email);
+      const phoneValid = patterns.phone.test(phone);
+      const idCardValid = patterns.idCard.test(idCard);
+      
+      document.getElementById('emailResult').innerHTML = 
+        `<div class="validation-result ${emailValid ? 'valid' : 'invalid'}">${emailValid ? '✓ 有效' : '✗ 无效'}</div>`;
+      document.getElementById('phoneResult').innerHTML = 
+        `<div class="validation-result ${phoneValid ? 'valid' : 'invalid'}">${phoneValid ? '✓ 有效' : '✗ 无效'}</div>`;
+      document.getElementById('idCardResult').innerHTML = 
+        `<div class="validation-result ${idCardValid ? 'valid' : 'invalid'}">${idCardValid ? '✓ 有效' : '✗ 无效'}</div>`;
+    }
+
+    const StringUtils = {
+      capitalize(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+      },
+      camelCase(str) {
+        return str.replace(/[-_](\w)/g, (_, c) => c.toUpperCase());
+      },
+      kebabCase(str) {
+        return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+      },
+      truncate(str, length = 10) {
+        return str.length > length ? str.slice(0, length) + '...' : str;
+      },
+      mask(str, start = 2, end = str.length - 2) {
+        return str.slice(0, start) + '*'.repeat(end - start) + str.slice(end);
+      },
+      escapeHtml(str) {
+        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+        return str.replace(/[&<>"']/g, m => map[m]);
+      }
+    };
+
+    function getToolInput() {
+      return document.getElementById('toolInput').value;
+    }
+
+    function toolCamelCase() {
+      document.getElementById('toolOutput').textContent = 
+        `驼峰: ${StringUtils.camelCase(getToolInput())}`;
+    }
+
+    function toolKebabCase() {
+      document.getElementById('toolOutput').textContent = 
+        `短横线: ${StringUtils.kebabCase(getToolInput())}`;
+    }
+
+    function toolCapitalize() {
+      document.getElementById('toolOutput').textContent = 
+        `首字母大写: ${StringUtils.capitalize(getToolInput())}`;
+    }
+
+    function toolTruncate() {
+      document.getElementById('toolOutput').textContent = 
+        `截断: ${StringUtils.truncate(getToolInput(), 10)}`;
+    }
+
+    function toolMask() {
+      document.getElementById('toolOutput').textContent = 
+        `遮罩: ${StringUtils.mask(getToolInput())}`;
+    }
+
+    function toolEscape() {
+      document.getElementById('toolOutput').textContent = 
+        `HTML转义: ${StringUtils.escapeHtml(getToolInput())}`;
+    }
+
+    document.getElementById('validateEmail').addEventListener('input', validateAll);
+    document.getElementById('validatePhone').addEventListener('input', validateAll);
+    document.getElementById('validateIdCard').addEventListener('input', validateAll);
+  </script>
+</body>
+</html>

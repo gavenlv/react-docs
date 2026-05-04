@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS 架构示例</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 40px 20px;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 40px;
+    }
+
+    .demo-section {
+      margin: 40px auto;
+      max-width: 1200px;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .demo-title {
+      font-size: 24px;
+      color: #3498db;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #3498db;
+    }
+
+    .demo-description {
+      background: #e7f3ff;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      border-left: 4px solid #3498db;
+    }
+
+    /* BEM 命名示例 */
+    .card {
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .card__header {
+      background: #3498db;
+      color: white;
+      padding: 20px;
+    }
+
+    .card__title {
+      font-size: 20px;
+      margin: 0;
+    }
+
+    .card__body {
+      padding: 20px;
+    }
+
+    .card__text {
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .card__footer {
+      padding: 15px 20px;
+      border-top: 1px solid #eee;
+      background: #f9f9f9;
+    }
+
+    .card__button {
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .card__button--primary {
+      background: #3498db;
+    }
+
+    .card__button--secondary {
+      background: #95a5a6;
+    }
+
+    .card__button--danger {
+      background: #e74c3c;
+    }
+
+    .card__button:hover {
+      opacity: 0.9;
+    }
+
+    .card--featured {
+      border: 2px solid #f39c12;
+    }
+
+    .card--featured .card__header {
+      background: #f39c12;
+    }
+
+    /* OOCSS 示例 */
+    .media {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .media__image {
+      margin-right: 15px;
+    }
+
+    .media__body {
+      flex: 1;
+    }
+
+    .media--reverse {
+      flex-direction: row-reverse;
+    }
+
+    .media--reverse .media__image {
+      margin-right: 0;
+      margin-left: 15px;
+    }
+
+    .avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #3498db;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+    }
+
+    /* 工具类 */
+    .mt-1 { margin-top: 10px; }
+    .mt-2 { margin-top: 20px; }
+    .mb-1 { margin-bottom: 10px; }
+    .mb-2 { margin-bottom: 20px; }
+    .p-1 { padding: 10px; }
+    .p-2 { padding: 20px; }
+
+    .text-center { text-align: center; }
+    .text-left { text-align: left; }
+    .text-right { text-align: right; }
+
+    .bg-primary { background: #3498db; color: white; }
+    .bg-secondary { background: #95a5a6; color: white; }
+    .bg-success { background: #2ecc71; color: white; }
+    .bg-danger { background: #e74c3c; color: white; }
+
+    .rounded { border-radius: 8px; }
+    .shadow { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+
+    /* 组件示例 */
+    .alert {
+      padding: 15px 20px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+      border-left: 4px solid;
+    }
+
+    .alert--info {
+      background: #d1ecf1;
+      border-color: #17a2b8;
+      color: #0c5460;
+    }
+
+    .alert--success {
+      background: #d4edda;
+      border-color: #28a745;
+      color: #155724;
+    }
+
+    .alert--warning {
+      background: #fff3cd;
+      border-color: #ffc107;
+      color: #856404;
+    }
+
+    .alert--danger {
+      background: #f8d7da;
+      border-color: #dc3545;
+      color: #721c24;
+    }
+
+    /* 布局容器 */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 20px;
+    }
+
+    .grid--2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .grid--3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .grid--4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    /* 按钮组件 */
+    .btn {
+      display: inline-block;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+      text-decoration: none;
+    }
+
+    .btn--sm {
+      padding: 5px 15px;
+      font-size: 12px;
+    }
+
+    .btn--lg {
+      padding: 15px 30px;
+      font-size: 16px;
+    }
+
+    .btn--block {
+      display: block;
+      width: 100%;
+    }
+
+    .btn--primary {
+      background: #3498db;
+      color: white;
+    }
+
+    .btn--secondary {
+      background: #95a5a6;
+      color: white;
+    }
+
+    .btn--success {
+      background: #2ecc71;
+      color: white;
+    }
+
+    .btn--danger {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+    /* 表单组件 */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #3498db;
+    }
+
+    .form-input--error {
+      border-color: #e74c3c;
+    }
+
+    .form-error {
+      color: #e74c3c;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .label {
+      display: inline-block;
+      background: #3498db;
+      color: white;
+      padding: 3px 10px;
+      border-radius: 3px;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+
+    .code-block {
+      background: #2c3e50;
+      color: #ecf0f1;
+      padding: 15px;
+      border-radius: 5px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      overflow-x: auto;
+      margin: 15px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>CSS 架构示例</h1>
+
+  <div class="demo-section">
+    <h2 class="demo-title">1. BEM 命名规范</h2>
+    <div class="demo-description">
+      <strong>BEM</strong> = Block（块）__Element（元素）--Modifier（修饰符）
+    </div>
+    
+    <div class="code-block">
+      .card {}                    /* Block */<br>
+      .card__header {}            /* Element */<br>
+      .card__title {}             /* Element */<br>
+      .card--featured {}          /* Modifier */<br>
+      .card__button--primary {}   /* Element + Modifier */
+    </div>
+
+    <div class="card">
+      <div class="card__header">
+        <h3 class="card__title">BEM 卡片示例</h3>
+      </div>
+      <div class="card__body">
+        <p class="card__text">这是一个使用 BEM 命名规范的卡片组件。</p>
+      </div>
+      <div class="card__footer">
+        <button class="card__button card__button--primary">主要按钮</button>
+        <button class="card__button card__button--secondary">次要按钮</button>
+      </div>
+    </div>
+
+    <div class="card card--featured">
+      <div class="card__header">
+        <h3 class="card__title">特色卡片</h3>
+      </div>
+      <div class="card__body">
+        <p class="card__text">这是使用修饰符的特色卡片。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">2. OOCSS（面向对象的 CSS）</h2>
+    <div class="demo-description">
+      分离结构和外观，分离容器和内容
+    </div>
+
+    <div class="media">
+      <div class="media__image">
+        <div class="avatar">A</div>
+      </div>
+      <div class="media__body">
+        <h4>媒体对象标题</h4>
+        <p>这是媒体对象的内容，展示了 OOCSS 的分离原则。</p>
+      </div>
+    </div>
+
+    <div class="media media--reverse">
+      <div class="media__image">
+        <div class="avatar">B</div>
+      </div>
+      <div class="media__body">
+        <h4>反向媒体对象</h4>
+        <p>使用修饰符改变布局方向，无需重复代码。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">3. 工具类（Utility Classes）</h2>
+    <div class="demo-description">
+      单一用途的小类，快速构建界面
+    </div>
+
+    <div class="p-2 bg-primary rounded shadow text-center mb-2">
+      组合工具类：padding + background + rounded + shadow + text-center
+    </div>
+
+    <div class="grid grid--3">
+      <div class="p-2 bg-secondary rounded text-center">网格 1</div>
+      <div class="p-2 bg-success rounded text-center">网格 2</div>
+      <div class="p-2 bg-danger rounded text-center">网格 3</div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">4. 组件化设计</h2>
+    <div class="demo-description">
+      创建可复用的组件
+    </div>
+
+    <h3>Alert 组件</h3>
+    <div class="alert alert--info">
+      <strong>提示：</strong>这是一条信息提示。
+    </div>
+    <div class="alert alert--success">
+      <strong>成功：</strong>操作成功完成！
+    </div>
+    <div class="alert alert--warning">
+      <strong>警告：</strong>请注意这个警告信息。
+    </div>
+    <div class="alert alert--danger">
+      <strong>错误：</strong>发生了一个错误。
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">5. 按钮组件</h2>
+    <div class="demo-description">
+      使用修饰符创建不同样式的按钮
+    </div>
+
+    <div class="mb-2">
+      <button class="btn btn--primary btn--sm">小按钮</button>
+      <button class="btn btn--secondary">默认按钮</button>
+      <button class="btn btn--success btn--lg">大按钮</button>
+      <button class="btn btn--danger">危险按钮</button>
+    </div>
+
+    <button class="btn btn--primary btn--block">块级按钮</button>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">6. 表单组件</h2>
+    <div class="demo-description">
+      标准化的表单样式
+    </div>
+
+    <form style="max-width: 500px;">
+      <div class="form-group">
+        <label class="form-label">用户名</label>
+        <input type="text" class="form-input" placeholder="请输入用户名">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">邮箱</label>
+        <input type="email" class="form-input form-input--error" placeholder="请输入邮箱">
+        <div class="form-error">请输入有效的邮箱地址</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">密码</label>
+        <input type="password" class="form-input" placeholder="请输入密码">
+      </div>
+
+      <button type="submit" class="btn btn--primary">提交</button>
+    </form>
+  </div>
+</body>
+</html>

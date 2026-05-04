@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>表单演示</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      background: #f5f5f5;
+      padding: 40px 20px;
+    }
+    h1 { color: #e44d26; border-bottom: 3px solid #e44d26; padding-bottom: 10px; margin-bottom: 30px; text-align: center; }
+    h2 { color: #f16529; margin: 30px 0 15px; }
+    .container { max-width: 800px; margin: 0 auto; }
+    .demo-box {
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      margin: 20px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    fieldset {
+      border: 2px solid #e44d26;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 15px 0;
+    }
+    legend {
+      padding: 0 10px;
+      font-weight: bold;
+      color: #e44d26;
+    }
+    .form-group {
+      margin: 15px 0;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+      color: #333;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"],
+    input[type="url"],
+    input[type="search"],
+    input[type="number"],
+    input[type="date"],
+    input[type="time"],
+    input[type="datetime-local"],
+    input[type="month"],
+    input[type="week"],
+    input[type="color"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #e44d26;
+    }
+    input:invalid:not(:placeholder-shown) {
+      border-color: #e74c3c;
+    }
+    input:valid:not(:placeholder-shown) {
+      border-color: #27ae60;
+    }
+    .input-types {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+    }
+    .input-types .form-group { margin: 0; }
+    .input-types label { font-size: 12px; color: #666; }
+    .checkbox-group, .radio-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    .checkbox-group label, .radio-group label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+    input[type="range"] {
+      width: 100%;
+      margin: 10px 0;
+    }
+    .range-value {
+      text-align: center;
+      font-weight: bold;
+      color: #e44d26;
+    }
+    button {
+      background: #e44d26;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s;
+    }
+    button:hover { background: #c43e1c; }
+    button[type="reset"] {
+      background: #666;
+      margin-left: 10px;
+    }
+    button[type="reset"]:hover { background: #444; }
+    .two-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    @media (max-width: 600px) {
+      .two-columns { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>表单演示</h1>
+    
+    <div class="demo-box">
+      <h2>文本输入类型</h2>
+      <div class="input-types">
+        <div class="form-group">
+          <label>text - 文本</label>
+          <input type="text" placeholder="输入文本">
+        </div>
+        <div class="form-group">
+          <label>password - 密码</label>
+          <input type="password" placeholder="输入密码">
+        </div>
+        <div class="form-group">
+          <label>email - 邮箱</label>
+          <input type="email" placeholder="example@email.com">
+        </div>
+        <div class="form-group">
+          <label>tel - 电话</label>
+          <input type="tel" placeholder="138-0000-0000">
+        </div>
+        <div class="form-group">
+          <label>url - 网址</label>
+          <input type="url" placeholder="https://">
+        </div>
+        <div class="form-group">
+          <label>search - 搜索</label>
+          <input type="search" placeholder="搜索...">
+        </div>
+      </div>
+    </div>
+    
+    <div class="demo-box">
+      <h2>数字和日期类型</h2>
+      <div class="input-types">
+        <div class="form-group">
+          <label>number - 数字</label>
+          <input type="number" min="0" max="100" value="50">
+        </div>
+        <div class="form-group">
+          <label>range - 滑块</label>
+          <input type="range" min="0" max="100" value="50" 
+                 oninput="this.nextElementSibling.textContent = this.value">
+          <div class="range-value">50</div>
+        </div>
+        <div class="form-group">
+          <label>date - 日期</label>
+          <input type="date">
+        </div>
+        <div class="form-group">
+          <label>time - 时间</label>
+          <input type="time">
+        </div>
+        <div class="form-group">
+          <label>datetime-local</label>
+          <input type="datetime-local">
+        </div>
+        <div class="form-group">
+          <label>color - 颜色</label>
+          <input type="color" value="#e44d26">
+        </div>
+      </div>
+    </div>
+    
+    <div class="demo-box">
+      <h2>选择控件</h2>
+      <fieldset>
+        <legend>单选框（Radio）</legend>
+        <div class="radio-group">
+          <label><input type="radio" name="gender" value="male"> 男</label>
+          <label><input type="radio" name="gender" value="female"> 女</label>
+          <label><input type="radio" name="gender" value="other"> 其他</label>
+        </div>
+      </fieldset>
+      
+      <fieldset>
+        <legend>复选框（Checkbox）</legend>
+        <div class="checkbox-group">
+          <label><input type="checkbox" name="hobby" value="reading"> 阅读</label>
+          <label><input type="checkbox" name="hobby" value="music"> 音乐</label>
+          <label><input type="checkbox" name="hobby" value="sports"> 运动</label>
+          <label><input type="checkbox" name="hobby" value="travel"> 旅行</label>
+        </div>
+      </fieldset>
+      
+      <fieldset>
+        <legend>下拉选择（Select）</legend>
+        <div class="two-columns">
+          <div class="form-group">
+            <label>单选</label>
+            <select>
+              <option value="">请选择城市</option>
+              <option value="beijing">北京</option>
+              <option value="shanghai">上海</option>
+              <option value="guangzhou">广州</option>
+              <option value="shenzhen">深圳</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>多选</label>
+            <select multiple style="height: 100px;">
+              <option value="html">HTML</option>
+              <option value="css">CSS</option>
+              <option value="js">JavaScript</option>
+              <option value="vue">Vue</option>
+            </select>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+    
+    <div class="demo-box">
+      <h2>表单验证</h2>
+      <form novalidate>
+        <div class="form-group">
+          <label>必填字段 *</label>
+          <input type="text" required placeholder="此项为必填">
+        </div>
+        <div class="form-group">
+          <label>邮箱验证</label>
+          <input type="email" placeholder="请输入有效邮箱">
+        </div>
+        <div class="form-group">
+          <label>密码（最少6位）</label>
+          <input type="password" minlength="6" placeholder="至少6个字符">
+        </div>
+        <div class="form-group">
+          <label>手机号验证</label>
+          <input type="tel" pattern="[0-9]{11}" placeholder="11位手机号">
+        </div>
+      </form>
+    </div>
+    
+    <div class="demo-box">
+      <h2>完整注册表单</h2>
+      <form>
+        <fieldset>
+          <legend>注册信息</legend>
+          <div class="two-columns">
+            <div class="form-group">
+              <label for="username">用户名 *</label>
+              <input type="text" id="username" name="username" required 
+                     placeholder="请输入用户名">
+            </div>
+            <div class="form-group">
+              <label for="email">邮箱 *</label>
+              <input type="email" id="email" name="email" required
+                     placeholder="请输入邮箱">
+            </div>
+          </div>
+          <div class="two-columns">
+            <div class="form-group">
+              <label for="password">密码 *</label>
+              <input type="password" id="password" name="password" 
+                     minlength="6" required placeholder="至少6个字符">
+            </div>
+            <div class="form-group">
+              <label for="confirm">确认密码 *</label>
+              <input type="password" id="confirm" name="confirm" required
+                     placeholder="再次输入密码">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="bio">个人简介</label>
+            <textarea id="bio" name="bio" rows="3" placeholder="介绍一下自己..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" required> 我已阅读并同意用户协议
+            </label>
+          </div>
+          <button type="submit">注册</button>
+          <button type="reset">重置</button>
+        </fieldset>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

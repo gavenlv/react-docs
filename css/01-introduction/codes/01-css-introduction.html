@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS 引入方式对比</title>
+  <style>
+    /* 内部样式表 */
+    .internal-style {
+      color: #3498db;
+      font-size: 18px;
+      padding: 20px;
+      background: #f0f0f0;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>CSS 三种引入方式演示</h1>
+  
+  <h2>1. 行内样式</h2>
+  <p style="color: red; font-size: 20px; padding: 10px; background: #fff3cd;">
+    这是使用行内样式的段落
+  </p>
+  
+  <h2>2. 内部样式表</h2>
+  <div class="internal-style">
+    这是使用内部样式表的段落
+  </div>
+  
+  <h2>3. 外部样式表</h2>
+  <link rel="stylesheet" href="external.css">
+  <div class="external-style">
+    这是使用外部样式表的段落（需要创建 external.css 文件）
+  </div>
+  
+  <h2>对比说明</h2>
+  <table border="1" cellpadding="10" style="border-collapse: collapse; width: 100%;">
+    <thead>
+      <tr style="background: #f0f0f0;">
+        <th>方式</th>
+        <th>优点</th>
+        <th>缺点</th>
+        <th>适用场景</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>行内样式</td>
+        <td>简单直接</td>
+        <td>难以维护、无法复用</td>
+        <td>临时测试、邮件模板</td>
+      </tr>
+      <tr>
+        <td>内部样式表</td>
+        <td>集中管理、无需额外文件</td>
+        <td>无法跨页面复用</td>
+        <td>单页面应用</td>
+      </tr>
+      <tr>
+        <td>外部样式表</td>
+        <td>可复用、易维护、可缓存</td>
+        <td>需要额外请求</td>
+        <td>所有项目（推荐）</td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>表格演示</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      background: #f5f5f5;
+      padding: 40px 20px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    h1 { color: #e44d26; border-bottom: 3px solid #e44d26; padding-bottom: 10px; margin-bottom: 30px; }
+    h2 { color: #f16529; margin: 30px 0 15px; }
+    .demo-box {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+    }
+    caption {
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #333;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+    }
+    th {
+      background: #e44d26;
+      color: white;
+      font-weight: bold;
+    }
+    tr:nth-child(even) {
+      background: #f8f9fa;
+    }
+    tr:hover {
+      background: #fff5f0;
+    }
+    .highlight {
+      background: #fff3cd !important;
+      font-weight: bold;
+    }
+    .structure-demo th { background: #333; }
+    .structure-demo .tag { 
+      font-family: 'Courier New', monospace;
+      background: #f0f0f0;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1>表格演示</h1>
+  
+  <div class="demo-box">
+    <h2>基本表格</h2>
+    <table>
+      <caption>学生成绩表</caption>
+      <thead>
+        <tr>
+          <th>姓名</th>
+          <th>语文</th>
+          <th>数学</th>
+          <th>英语</th>
+          <th>总分</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>张三</td>
+          <td>85</td>
+          <td>92</td>
+          <td>88</td>
+          <td>265</td>
+        </tr>
+        <tr>
+          <td>李四</td>
+          <td>78</td>
+          <td>95</td>
+          <td>82</td>
+          <td>255</td>
+        </tr>
+        <tr>
+          <td>王五</td>
+          <td>90</td>
+          <td>88</td>
+          <td>91</td>
+          <td>269</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td><strong>平均分</strong></td>
+          <td>84.3</td>
+          <td>91.7</td>
+          <td>87.0</td>
+          <td>263.0</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  
+  <div class="demo-box">
+    <h2>表格结构</h2>
+    <table class="structure-demo">
+      <thead>
+        <tr>
+          <th>标签</th>
+          <th>描述</th>
+          <th>作用</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tag">&lt;table&gt;</span></td>
+          <td>表格容器</td>
+          <td>定义整个表格</td>
+        </tr>
+        <tr>
+          <td><span class="tag">&lt;thead&gt;</span></td>
+          <td>表头区域</td>
+          <td>包含列标题</td>
+        </tr>
+        <tr>
+          <td><span class="tag">&lt;tbody&gt;</span></td>
+          <td>表体区域</td>
+          <td>包含数据行</td>
+        </tr>
+        <tr>
+          <td><span class="tag">&lt;tfoot&gt;</span></td>
+          <td>表尾区域</td>
+          <td>包含汇总信息</td>
+        </tr>
+        <tr>
+          <td><span class="tag">&lt;tr&gt;</span></td>
+          <td>表格行</td>
+          <td>定义一行</td>
+        </tr>
+        <tr>
+          <td><span class="tag">&lt;th&gt;</span></td>
+          <td>表头单元格</td>
+          <td>定义列/行标题</td>
+        </tr>
+        <tr>
+          <td><span class="tag">&lt;td&gt;</span></td>
+          <td>数据单元格</td>
+          <td>定义数据内容</td>
+        </tr>
+        <tr>
+          <td><span class="tag">&lt;caption&gt;</span></td>
+          <td>表格标题</td>
+          <td>描述表格内容</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="demo-box">
+    <h2>合并单元格</h2>
+    <table>
+      <caption>课程表</caption>
+      <thead>
+        <tr>
+          <th>时间</th>
+          <th>周一</th>
+          <th>周二</th>
+          <th>周三</th>
+          <th>周四</th>
+          <th>周五</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th rowspan="2">上午</th>
+          <td>语文</td>
+          <td>数学</td>
+          <td>英语</td>
+          <td>物理</td>
+          <td>化学</td>
+        </tr>
+        <tr>
+          <td>数学</td>
+          <td>语文</td>
+          <td>物理</td>
+          <td>英语</td>
+          <td>生物</td>
+        </tr>
+        <tr>
+          <th>中午</th>
+          <td colspan="5" class="highlight">午休</td>
+        </tr>
+        <tr>
+          <th rowspan="2">下午</th>
+          <td>体育</td>
+          <td>音乐</td>
+          <td>美术</td>
+          <td>历史</td>
+          <td>地理</td>
+        </tr>
+        <tr>
+          <td>自习</td>
+          <td>自习</td>
+          <td>班会</td>
+          <td>自习</td>
+          <td>自习</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="demo-box">
+    <h2>员工信息表</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>姓名</th>
+          <th>部门</th>
+          <th>职位</th>
+          <th>邮箱</th>
+          <th>入职日期</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>张三</td>
+          <td rowspan="3">技术部</td>
+          <td>前端工程师</td>
+          <td>zhangsan@example.com</td>
+          <td>2023-01-15</td>
+        </tr>
+        <tr>
+          <td>李四</td>
+          <td>后端工程师</td>
+          <td>lisi@example.com</td>
+          <td>2023-02-20</td>
+        </tr>
+        <tr>
+          <td>王五</td>
+          <td>测试工程师</td>
+          <td>wangwu@example.com</td>
+          <td>2023-03-10</td>
+        </tr>
+        <tr>
+          <td>赵六</td>
+          <td rowspan="2">产品部</td>
+          <td>产品经理</td>
+          <td>zhaoliu@example.com</td>
+          <td>2023-04-05</td>
+        </tr>
+        <tr>
+          <td>孙七</td>
+          <td>UI 设计师</td>
+          <td>sunqi@example.com</td>
+          <td>2023-05-12</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="5"><strong>总计：5 名员工</strong></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</body>
+</html>

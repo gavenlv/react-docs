@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>运算符演示</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 40px 20px;
+      background: #f5f5f5;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 40px;
+    }
+    .demo-section {
+      margin: 30px 0;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .demo-title {
+      font-size: 24px;
+      color: #f7df1e;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f7df1e;
+    }
+    .code-block {
+      background: #282c34;
+      color: #abb2bf;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      overflow-x: auto;
+      margin: 15px 0;
+      line-height: 1.6;
+    }
+    .keyword { color: #c678dd; }
+    .string { color: #98c379; }
+    .number { color: #d19a66; }
+    .comment { color: #5c6370; font-style: italic; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    th, td {
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background: #f5f5f5;
+      font-weight: 600;
+    }
+    .calculator {
+      max-width: 300px;
+      margin: 20px auto;
+      background: #2c3e50;
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .calc-display {
+      background: #1a252f;
+      color: #fff;
+      font-size: 32px;
+      text-align: right;
+      padding: 20px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+      font-family: 'Courier New', monospace;
+      min-height: 50px;
+      word-break: break-all;
+    }
+    .calc-buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .calc-btn {
+      padding: 20px;
+      font-size: 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .calc-btn:hover {
+      transform: scale(1.05);
+    }
+    .calc-btn:active {
+      transform: scale(0.95);
+    }
+    .calc-btn-number {
+      background: #34495e;
+      color: white;
+    }
+    .calc-btn-operator {
+      background: #f7df1e;
+      color: #000;
+    }
+    .calc-btn-clear {
+      background: #e74c3c;
+      color: white;
+    }
+    .calc-btn-equals {
+      background: #27ae60;
+      color: white;
+    }
+    .output {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 15px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 14px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+      transition: all 0.3s;
+    }
+    .btn-primary {
+      background: #f7df1e;
+      color: #000;
+    }
+    .btn-primary:hover {
+      background: #e5ce1b;
+    }
+  </style>
+</head>
+<body>
+  <h1>运算符演示</h1>
+  
+  <div class="demo-section">
+    <h2 class="demo-title">算术运算符</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>运算符</th>
+          <th>描述</th>
+          <th>示例</th>
+          <th>结果</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>+</td>
+          <td>加法</td>
+          <td>5 + 3</td>
+          <td id="add-result">8</td>
+        </tr>
+        <tr>
+          <td>-</td>
+          <td>减法</td>
+          <td>5 - 3</td>
+          <td id="sub-result">2</td>
+        </tr>
+        <tr>
+          <td>*</td>
+          <td>乘法</td>
+          <td>5 * 3</td>
+          <td id="mul-result">15</td>
+        </tr>
+        <tr>
+          <td>/</td>
+          <td>除法</td>
+          <td>6 / 3</td>
+          <td id="div-result">2</td>
+        </tr>
+        <tr>
+          <td>%</td>
+          <td>取余</td>
+          <td>5 % 3</td>
+          <td id="mod-result">2</td>
+        </tr>
+        <tr>
+          <td>**</td>
+          <td>幂运算</td>
+          <td>2 ** 3</td>
+          <td id="pow-result">8</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">比较运算符</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>运算符</th>
+          <th>描述</th>
+          <th>示例</th>
+          <th>结果</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>==</td>
+          <td>相等（类型转换）</td>
+          <td>5 == '5'</td>
+          <td id="eq-result">true</td>
+        </tr>
+        <tr>
+          <td>===</td>
+          <td>严格相等</td>
+          <td>5 === '5'</td>
+          <td id="seq-result">false</td>
+        </tr>
+        <tr>
+          <td>!=</td>
+          <td>不相等</td>
+          <td>5 != '5'</td>
+          <td id="neq-result">false</td>
+        </tr>
+        <tr>
+          <td>!==</td>
+          <td>严格不相等</td>
+          <td>5 !== '5'</td>
+          <td id="sneq-result">true</td>
+        </tr>
+        <tr>
+          <td>></td>
+          <td>大于</td>
+          <td>5 > 3</td>
+          <td id="gt-result">true</td>
+        </tr>
+        <tr>
+          <td><</td>
+          <td>小于</td>
+          <td>5 < 3</td>
+          <td id="lt-result">false</td>
+        </tr>
+      </tbody>
+    </table>
+    <button class="btn-primary" onclick="testComparison()">测试比较运算</button>
+    <div class="output" id="comparisonOutput">点击按钮测试</div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">逻辑运算符</h2>
+    <div class="code-block">
+      <span class="keyword">&&</span> 逻辑与：两边都为真才为真<br>
+      <span class="keyword">||</span> 逻辑或：一边为真就为真<br>
+      <span class="keyword">!</span> 逻辑非：取反
+    </div>
+    <button class="btn-primary" onclick="testLogical()">测试逻辑运算</button>
+    <div class="output" id="logicalOutput">点击按钮测试</div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">三元运算符</h2>
+    <div class="code-block">
+      条件 ? 真值 : 假值
+    </div>
+    <div class="output">
+      <div>年龄：<input type="number" id="ageInput" value="18" style="width: 60px;"></div>
+      <div id="ageStatus" style="margin-top: 10px;">状态：成年</div>
+    </div>
+    <button class="btn-primary" onclick="checkAge()">检查年龄</button>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">简单计算器</h2>
+    <div class="calculator">
+      <div class="calc-display" id="calcDisplay">0</div>
+      <div class="calc-buttons">
+        <button class="calc-btn calc-btn-clear" onclick="clearCalc()">C</button>
+        <button class="calc-btn calc-btn-operator" onclick="appendCalc('(')">(</button>
+        <button class="calc-btn calc-btn-operator" onclick="appendCalc(')')">)</button>
+        <button class="calc-btn calc-btn-operator" onclick="appendCalc('/')">/</button>
+        <button class="calc-btn calc-btn-number" onclick="appendCalc('7')">7</button>
+        <button class="calc-btn calc-btn-number" onclick="appendCalc('8')">8</button>
+        <button class="calc-btn calc-btn-number" onclick="appendCalc('9')">9</button>
+        <button class="calc-btn calc-btn-operator" onclick="appendCalc('*')">×</button>
+        <button class="calc-btn calc-btn-number" onclick="appendCalc('4')">4</button>
+        <button class="calc-btn calc-btn-number" onclick="appendCalc('5')">5</button>
+        <button class="calc-btn calc-btn-number" onclick="appendCalc('6')">6</button>
+        <button class="calc-btn calc-btn-operator" onclick="appendCalc('-')">-</button>
+        <button class="calc-btn calc-btn-number" onclick="appendCalc('1')">1</button>
+        <button class="calc-btn calc-btn-number" onclick="appendCalc('2')">2</button>
+        <button class="calc-btn calc-btn-number" onclick="appendCalc('3')">3</button>
+        <button class="calc-btn calc-btn-operator" onclick="appendCalc('+')">+</button>
+        <button class="calc-btn calc-btn-number" onclick="appendCalc('0')">0</button>
+        <button class="calc-btn calc-btn-number" onclick="appendCalc('.')">.</button>
+        <button class="calc-btn calc-btn-operator" onclick="appendCalc('%')">%</button>
+        <button class="calc-btn calc-btn-equals" onclick="calculate()">=</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function testComparison() {
+      let result = '';
+      result += `5 == '5': ${5 == '5'}\n`;
+      result += `5 === '5': ${5 === '5'}\n`;
+      result += `null == undefined: ${null == undefined}\n`;
+      result += `null === undefined: ${null === undefined}\n`;
+      result += `0 == false: ${0 == false}\n`;
+      result += `0 === false: ${0 === false}\n`;
+      result += `'' == false: ${'' == false}\n`;
+      result += `'' === false: ${'' === false}\n`;
+      document.getElementById('comparisonOutput').textContent = result;
+    }
+
+    function testLogical() {
+      let result = '';
+      result += '&& 逻辑与:\n';
+      result += `true && true: ${true && true}\n`;
+      result += `true && false: ${true && false}\n`;
+      result += `false && true: ${false && true}\n\n`;
+      
+      result += '|| 逻辑或:\n';
+      result += `true || false: ${true || false}\n`;
+      result += `false || true: ${false || true}\n`;
+      result += `false || false: ${false || false}\n\n`;
+      
+      result += '! 逻辑非:\n';
+      result += `!true: ${!true}\n`;
+      result += `!false: ${!false}\n`;
+      result += `!!1 (转布尔): ${!!1}\n\n`;
+      
+      result += '短路求值:\n';
+      result += `false && console.log('不执行'): ${false && '不执行'}\n`;
+      result += `true || '默认值': ${true || '默认值'}\n`;
+      result += `null ?? '默认值': ${null ?? '默认值'}\n`;
+      result += `0 ?? '默认值': ${0 ?? '默认值'}\n`;
+      result += `0 || '默认值': ${0 || '默认值'}\n`;
+      
+      document.getElementById('logicalOutput').textContent = result;
+    }
+
+    function checkAge() {
+      const age = parseInt(document.getElementById('ageInput').value);
+      const status = age >= 18 ? '成年' : '未成年';
+      const canVote = age >= 18 ? '可以投票' : '不可以投票';
+      const canDrink = age >= 21 ? '可以饮酒' : '不可以饮酒';
+      document.getElementById('ageStatus').innerHTML = `
+        状态：${status}<br>
+        投票：${canVote}<br>
+        饮酒：${canDrink}
+      `;
+    }
+
+    let calcValue = '0';
+    
+    function updateDisplay() {
+      document.getElementById('calcDisplay').textContent = calcValue;
+    }
+    
+    function appendCalc(val) {
+      if (calcValue === '0' && val !== '.') {
+        calcValue = val;
+      } else {
+        calcValue += val;
+      }
+      updateDisplay();
+    }
+    
+    function clearCalc() {
+      calcValue = '0';
+      updateDisplay();
+    }
+    
+    function calculate() {
+      try {
+        calcValue = eval(calcValue).toString();
+        updateDisplay();
+      } catch (e) {
+        calcValue = 'Error';
+        updateDisplay();
+        calcValue = '0';
+      }
+    }
+
+    document.addEventListener('keydown', function(e) {
+      const key = e.key;
+      if (/[0-9]/.test(key)) {
+        appendCalc(key);
+      } else if (['+', '-', '*', '/', '%', '(', ')', '.'].includes(key)) {
+        appendCalc(key);
+      } else if (key === 'Enter') {
+        calculate();
+      } else if (key === 'Escape' || key === 'c' || key === 'C') {
+        clearCalc();
+      }
+    });
+  </script>
+</body>
+</html>

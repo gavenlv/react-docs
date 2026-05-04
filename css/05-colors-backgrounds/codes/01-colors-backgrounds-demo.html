@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>颜色与背景示例</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 40px 20px;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 40px;
+    }
+
+    .demo-section {
+      margin: 40px auto;
+      max-width: 1000px;
+    }
+
+    .demo-title {
+      font-size: 24px;
+      color: #3498db;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #3498db;
+    }
+
+    /* 颜色表示方法 */
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .color-box {
+      height: 100px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    /* 渐变示例 */
+    .gradient-box {
+      height: 150px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .gradient-1 {
+      background: linear-gradient(to right, #3498db, #2ecc71);
+    }
+
+    .gradient-2 {
+      background: linear-gradient(45deg, #e74c3c, #f39c12, #2ecc71, #3498db);
+    }
+
+    .gradient-3 {
+      background: radial-gradient(circle, #3498db, #2c3e50);
+    }
+
+    .gradient-4 {
+      background: conic-gradient(#e74c3c, #f39c12, #2ecc71, #3498db, #9b59b6, #e74c3c);
+    }
+
+    /* 背景图片示例 */
+    .bg-image-demo {
+      height: 300px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      background-image: url('https://via.placeholder.com/1200x400');
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bg-image-demo::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.7));
+    }
+
+    .bg-image-demo .content {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      color: white;
+      z-index: 1;
+    }
+
+    /* 条纹背景 */
+    .stripes {
+      height: 100px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+
+    .stripes-1 {
+      background: repeating-linear-gradient(
+        45deg,
+        #3498db,
+        #3498db 10px,
+        #2ecc71 10px,
+        #2ecc71 20px
+      );
+    }
+
+    .stripes-2 {
+      background: repeating-linear-gradient(
+        0deg,
+        #e74c3c,
+        #e74c3c 10px,
+        #f39c12 10px,
+        #f39c12 20px
+      );
+    }
+
+    /* 文字渐变 */
+    .gradient-text {
+      font-size: 48px;
+      font-weight: bold;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    /* 按钮示例 */
+    .button-demo {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .btn {
+      padding: 12px 30px;
+      border: none;
+      border-radius: 25px;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-1 {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .btn-2 {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    .btn-3 {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    .btn-4 {
+      background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    }
+  </style>
+</head>
+<body>
+  <h1>颜色与背景示例</h1>
+
+  <div class="demo-section">
+    <h2 class="demo-title">1. 颜色表示方法</h2>
+    <div class="color-grid">
+      <div class="color-box" style="background: #e74c3c;">
+        十六进制<br>#e74c3c
+      </div>
+      <div class="color-box" style="background: rgb(52, 152, 219);">
+        RGB<br>rgb(52, 152, 219)
+      </div>
+      <div class="color-box" style="background: rgba(46, 204, 113, 0.8);">
+        RGBA<br>rgba(46, 204, 113, 0.8)
+      </div>
+      <div class="color-box" style="background: hsl(204, 70%, 53%);">
+        HSL<br>hsl(204, 70%, 53%)
+      </div>
+      <div class="color-box" style="background: hsla(340, 70%, 53%, 0.8);">
+        HSLA<br>hsla(340, 70%, 53%, 0.8)
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">2. 线性渐变</h2>
+    <div class="gradient-box gradient-1">
+      线性渐变（从左到右）
+    </div>
+    <div class="gradient-box gradient-2">
+      多色线性渐变（45度角）
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">3. 径向渐变和圆锥渐变</h2>
+    <div class="gradient-box gradient-3">
+      径向渐变
+    </div>
+    <div class="gradient-box gradient-4">
+      圆锥渐变
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">4. 背景图片与渐变遮罩</h2>
+    <div class="bg-image-demo">
+      <div class="content">
+        <h3>背景图片示例</h3>
+        <p>带有渐变遮罩的背景图片效果</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">5. 条纹背景</h2>
+    <div class="stripes stripes-1"></div>
+    <div class="stripes stripes-2"></div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">6. 文字渐变效果</h2>
+    <div class="gradient-text">渐变文字效果</div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">7. 渐变按钮</h2>
+    <div class="button-demo">
+      <button class="btn btn-1">按钮 1</button>
+      <button class="btn btn-2">按钮 2</button>
+      <button class="btn btn-3">按钮 3</button>
+      <button class="btn btn-4">按钮 4</button>
+    </div>
+  </div>
+</body>
+</html>

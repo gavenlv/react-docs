@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>异步编程演示</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 40px 20px;
+      background: #f5f5f5;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 { text-align: center; color: #2c3e50; margin-bottom: 40px; }
+    .demo-section {
+      margin: 30px 0;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .demo-title {
+      font-size: 24px;
+      color: #f7df1e;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f7df1e;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 14px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+      transition: all 0.3s;
+      background: #f7df1e;
+      color: #000;
+    }
+    button:hover { background: #e5ce1b; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
+    .output {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 15px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      white-space: pre-wrap;
+    }
+    .countdown-display {
+      font-size: 72px;
+      text-align: center;
+      font-weight: bold;
+      color: #667eea;
+      margin: 30px 0;
+    }
+    .event-loop-demo {
+      background: #282c34;
+      color: #abb2bf;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      margin: 15px 0;
+    }
+    .log-entry { margin: 5px 0; padding: 5px; border-radius: 3px; }
+    .log-sync { background: #2d3748; }
+    .log-micro { background: #276749; }
+    .log-macro { background: #744210; }
+    .progress-bar {
+      height: 30px;
+      background: #e0e0e0;
+      border-radius: 15px;
+      overflow: hidden;
+      margin: 20px 0;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      width: 0%;
+      transition: width 0.3s;
+    }
+  </style>
+</head>
+<body>
+  <h1>异步编程演示</h1>
+  
+  <div class="demo-section">
+    <h2 class="demo-title">同步 vs 异步</h2>
+    <button onclick="runSync()">执行同步代码</button>
+    <button onclick="runAsync()">执行异步代码</button>
+    <div class="output" id="syncAsyncOutput">点击按钮查看区别</div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">setTimeout 定时器</h2>
+    <button onclick="startTimeout()">开始 3 秒倒计时</button>
+    <button onclick="cancelTimeout()">取消</button>
+    <div class="output" id="timeoutOutput">点击开始</div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">setInterval 定时器</h2>
+    <button onclick="startInterval()">开始计时</button>
+    <button onclick="stopInterval()">停止</button>
+    <div class="countdown-display" id="intervalDisplay">00:00</div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">事件循环演示</h2>
+    <button onclick="demoEventLoop()">执行事件循环示例</button>
+    <div class="event-loop-demo" id="eventLoopOutput">
+      <p>点击按钮查看执行顺序</p>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">模拟异步加载</h2>
+    <button onclick="startLoading()" id="loadBtn">开始加载</button>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="output" id="loadingOutput">点击按钮开始模拟加载</div>
+  </div>
+
+  <script>
+    let timeoutId = null;
+    let intervalId = null;
+    let seconds = 0;
+
+    function runSync() {
+      const output = document.getElementById('syncAsyncOutput');
+      output.textContent = '';
+      
+      output.textContent += '第一\n';
+      output.textContent += '第二\n';
+      output.textContent += '第三\n';
+      output.textContent += '\n同步执行：按顺序依次输出';
+    }
+
+    function runAsync() {
+      const output = document.getElementById('syncAsyncOutput');
+      output.textContent = '';
+      
+      output.textContent += '第一\n';
+      
+      setTimeout(() => {
+        output.textContent += '第二（1秒后）\n';
+      }, 1000);
+      
+      output.textContent += '第三\n';
+      output.textContent += '\n异步执行：第二行延迟输出';
+    }
+
+    function startTimeout() {
+      const output = document.getElementById('timeoutOutput');
+      output.textContent = '等待 3 秒...\n';
+      
+      if (timeoutId) clearTimeout(timeoutId);
+      
+      timeoutId = setTimeout(() => {
+        output.textContent += '3 秒到了！';
+        timeoutId = null;
+      }, 3000);
+    }
+
+    function cancelTimeout() {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+        document.getElementById('timeoutOutput').textContent = '已取消';
+      }
+    }
+
+    function startInterval() {
+      if (intervalId) return;
+      
+      intervalId = setInterval(() => {
+        seconds++;
+        const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+        const secs = (seconds % 60).toString().padStart(2, '0');
+        document.getElementById('intervalDisplay').textContent = `${mins}:${secs}`;
+      }, 1000);
+    }
+
+    function stopInterval() {
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    }
+
+    function demoEventLoop() {
+      const output = document.getElementById('eventLoopOutput');
+      output.innerHTML = '';
+      
+      function addLog(text, type) {
+        const p = document.createElement('p');
+        p.className = `log-entry log-${type}`;
+        p.textContent = text;
+        output.appendChild(p);
+      }
+      
+      addLog('1. 同步代码开始', 'sync');
+      
+      setTimeout(() => {
+        addLog('4. setTimeout（宏任务）', 'macro');
+      }, 0);
+      
+      Promise.resolve().then(() => {
+        addLog('3. Promise（微任务）', 'micro');
+      });
+      
+      addLog('2. 同步代码结束', 'sync');
+      
+      setTimeout(() => {
+        addLog('执行顺序: 1 → 2 → 3 → 4', 'sync');
+        addLog('微任务优先于宏任务执行', 'sync');
+      }, 100);
+    }
+
+    function startLoading() {
+      const btn = document.getElementById('loadBtn');
+      const fill = document.getElementById('progressFill');
+      const output = document.getElementById('loadingOutput');
+      
+      btn.disabled = true;
+      fill.style.width = '0%';
+      output.textContent = '加载中...';
+      
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += Math.random() * 15;
+        if (progress >= 100) {
+          progress = 100;
+          clearInterval(interval);
+          btn.disabled = false;
+          output.textContent = '加载完成！';
+        }
+        fill.style.width = progress + '%';
+      }, 200);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文字排版示例</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      padding: 40px 20px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      color: #2c3e50;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .demo-section {
+      margin: 40px 0;
+      padding: 30px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .demo-title {
+      font-size: 24px;
+      color: #3498db;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #3498db;
+    }
+
+    /* 字体族示例 */
+    .font-serif {
+      font-family: "Georgia", "Times New Roman", serif;
+    }
+
+    .font-sans {
+      font-family: "Arial", "Helvetica", sans-serif;
+    }
+
+    .font-mono {
+      font-family: "Consolas", "Monaco", "Courier New", monospace;
+    }
+
+    /* 字体大小示例 */
+    .text-xs { font-size: 0.75rem; }
+    .text-sm { font-size: 0.875rem; }
+    .text-base { font-size: 1rem; }
+    .text-lg { font-size: 1.125rem; }
+    .text-xl { font-size: 1.25rem; }
+    .text-2xl { font-size: 1.5rem; }
+
+    /* 字体粗细示例 */
+    .font-light { font-weight: 300; }
+    .font-normal { font-weight: 400; }
+    .font-medium { font-weight: 500; }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+
+    /* 文本对齐示例 */
+    .text-left { text-align: left; }
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+    .text-justify { text-align: justify; }
+
+    /* 文本装饰示例 */
+    .underline { text-decoration: underline; }
+    .line-through { text-decoration: line-through; }
+    .overline { text-decoration: overline; }
+
+    /* 文本阴影示例 */
+    .text-shadow-1 {
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .text-shadow-2 {
+      text-shadow: 
+        1px 1px 0 #fff,
+        2px 2px 0 #333;
+      color: #3498db;
+    }
+
+    /* 文本溢出示例 */
+    .ellipsis {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 300px;
+      border: 1px solid #ddd;
+      padding: 10px;
+      background: #f9f9f9;
+    }
+
+    .ellipsis-multiline {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      overflow: hidden;
+      width: 300px;
+      border: 1px solid #ddd;
+      padding: 10px;
+      background: #f9f9f9;
+    }
+
+    /* 文章排版示例 */
+    .article {
+      font-family: "Georgia", "Times New Roman", serif;
+      font-size: 18px;
+      line-height: 1.8;
+      color: #333;
+    }
+
+    .article h2 {
+      font-size: 28px;
+      color: #2c3e50;
+      margin-top: 30px;
+      margin-bottom: 15px;
+    }
+
+    .article p {
+      margin-bottom: 1.5em;
+      text-align: justify;
+      text-indent: 2em;
+    }
+
+    .article blockquote {
+      margin: 20px 0;
+      padding: 15px 20px;
+      border-left: 4px solid #3498db;
+      background: #f9f9f9;
+      font-style: italic;
+      color: #555;
+    }
+
+    .example-row {
+      margin: 15px 0;
+      padding: 10px;
+      background: #f9f9f9;
+      border-radius: 5px;
+    }
+
+    .label {
+      display: inline-block;
+      background: #3498db;
+      color: white;
+      padding: 3px 10px;
+      border-radius: 3px;
+      font-size: 12px;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>文字排版示例</h1>
+
+  <div class="demo-section">
+    <h2 class="demo-title">1. 字体族（font-family）</h2>
+    <div class="example-row">
+      <span class="label">衬线字体</span>
+      <p class="font-serif">这是使用衬线字体的文本，适合长篇阅读。</p>
+    </div>
+    <div class="example-row">
+      <span class="label">无衬线字体</span>
+      <p class="font-sans">这是使用无衬线字体的文本，现代简洁。</p>
+    </div>
+    <div class="example-row">
+      <span class="label">等宽字体</span>
+      <p class="font-mono">这是使用等宽字体的文本，适合代码显示。</p>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">2. 字体大小（font-size）</h2>
+    <p class="text-xs">超小文本 (0.75rem)</p>
+    <p class="text-sm">小文本 (0.875rem)</p>
+    <p class="text-base">基础文本 (1rem)</p>
+    <p class="text-lg">大文本 (1.125rem)</p>
+    <p class="text-xl">超大文本 (1.25rem)</p>
+    <p class="text-2xl">超大文本 (1.5rem)</p>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">3. 字体粗细（font-weight）</h2>
+    <p class="font-light">轻字重 (300)</p>
+    <p class="font-normal">正常字重 (400)</p>
+    <p class="font-medium">中等字重 (500)</p>
+    <p class="font-semibold">半粗字重 (600)</p>
+    <p class="font-bold">粗字重 (700)</p>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">4. 文本对齐（text-align）</h2>
+    <p class="text-left">左对齐文本</p>
+    <p class="text-center">居中对齐文本</p>
+    <p class="text-right">右对齐文本</p>
+    <p class="text-justify">两端对齐文本：这是一段较长的文本，用于演示两端对齐效果。两端对齐会让文本的左右两端都对齐，形成整齐的版面效果。</p>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">5. 文本装饰（text-decoration）</h2>
+    <p class="underline">下划线文本</p>
+    <p class="line-through">删除线文本</p>
+    <p class="overline">上划线文本</p>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">6. 文本阴影（text-shadow）</h2>
+    <p class="text-shadow-1" style="font-size: 24px;">带有阴影效果的文本</p>
+    <p class="text-shadow-2" style="font-size: 24px;">多层阴影效果</p>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">7. 文本溢出处理</h2>
+    <div class="example-row">
+      <span class="label">单行溢出</span>
+      <div class="ellipsis">
+        这是一段很长的文本，超出容器宽度时会显示省略号。这是一段很长的文本，超出容器宽度时会显示省略号。
+      </div>
+    </div>
+    <div class="example-row">
+      <span class="label">多行溢出</span>
+      <div class="ellipsis-multiline">
+        这是一段很长的文本，超出容器高度时会显示省略号。这是一段很长的文本，超出容器高度时会显示省略号。这是一段很长的文本，超出容器高度时会显示省略号。这是一段很长的文本，超出容器高度时会显示省略号。
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">8. 文章排版示例</h2>
+    <article class="article">
+      <h2>文章标题</h2>
+      <p>这是一段文章内容，展示了良好的排版效果。合适的行高、段落间距和首行缩进让文章更易阅读。</p>
+      <blockquote>
+        "这是一段引用文字，通常用于强调重要内容或引用他人的话语。"
+      </blockquote>
+      <p>继续文章内容，良好的排版能够提升阅读体验，让读者更容易理解和吸收内容。</p>
+    </article>
+  </div>
+</body>
+</html>

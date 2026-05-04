@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文本元素演示</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.8;
+      background: #f5f5f5;
+      padding: 40px 20px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    h1 { color: #e44d26; border-bottom: 3px solid #e44d26; padding-bottom: 10px; }
+    h2 { color: #f16529; margin-top: 30px; }
+    h3 { color: #333; margin-top: 20px; }
+    h4, h5, h6 { color: #666; }
+    p { margin: 15px 0; }
+    .demo-box {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .headings-demo h1, .headings-demo h2, .headings-demo h3,
+    .headings-demo h4, .headings-demo h5, .headings-demo h6 {
+      margin: 10px 0;
+    }
+    blockquote {
+      background: #f8f9fa;
+      border-left: 4px solid #e44d26;
+      padding: 15px 20px;
+      margin: 20px 0;
+      font-style: italic;
+    }
+    code {
+      background: #282c34;
+      color: #98c379;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+    }
+    pre {
+      background: #282c34;
+      color: #abb2bf;
+      padding: 20px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 15px 0;
+    }
+    pre code {
+      background: none;
+      padding: 0;
+    }
+    .format-demo span {
+      display: inline-block;
+      margin: 5px 10px 5px 0;
+      padding: 5px 10px;
+      background: #f0f0f0;
+      border-radius: 4px;
+    }
+    hr {
+      border: none;
+      border-top: 2px solid #eee;
+      margin: 30px 0;
+    }
+    .special-chars {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+    }
+    .char-item {
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: center;
+    }
+    .char-item code { background: #e9ecef; color: #333; }
+  </style>
+</head>
+<body>
+  <h1>文本元素演示</h1>
+  
+  <div class="demo-box">
+    <h2>标题标签</h2>
+    <div class="headings-demo">
+      <h1>H1 一级标题</h1>
+      <h2>H2 二级标题</h2>
+      <h3>H3 三级标题</h3>
+      <h4>H4 四级标题</h4>
+      <h5>H5 五级标题</h5>
+      <h6>H6 六级标题</h6>
+    </div>
+  </div>
+  
+  <div class="demo-box">
+    <h2>段落和换行</h2>
+    <p>这是第一个段落。段落之间会有自动的间距。段落是网页中最基本的文本容器。</p>
+    <p>这是第二个段落。每个段落都应该包含一个完整的想法或主题。</p>
+    <p>
+      第一行<br>
+      第二行（使用 br 标签换行）
+    </p>
+    <hr>
+    <p>上面是一条水平分隔线</p>
+  </div>
+  
+  <div class="demo-box">
+    <h2>文本格式化</h2>
+    <div class="format-demo">
+      <span><strong>strong 重要文本</strong></span>
+      <span><em>em 强调文本</em></span>
+      <span><mark>mark 高亮文本</mark></span>
+      <span><del>del 删除文本</del></span>
+      <span><ins>ins 插入文本</ins></span>
+      <span><small>small 小号文本</small></span>
+      <span>正常<sub>下标</sub></span>
+      <span>正常<sup>上标</sup></span>
+    </div>
+  </div>
+  
+  <div class="demo-box">
+    <h2>引用</h2>
+    <blockquote>
+      学习 HTML 是成为前端开发者的第一步。掌握好基础，才能构建更复杂的网页。
+      <cite>——前端开发者</cite>
+    </blockquote>
+    <p>短引用示例：他说 <q>学习很有趣</q>。</p>
+  </div>
+  
+  <div class="demo-box">
+    <h2>代码展示</h2>
+    <p>行内代码：<code>console.log('Hello');</code></p>
+    <p>键盘按键：<kbd>Ctrl</kbd> + <kbd>C</kbd> 复制</p>
+    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;页面标题&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;Hello World&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+  </div>
+  
+  <div class="demo-box">
+    <h2>特殊字符</h2>
+    <div class="special-chars">
+      <div class="char-item"><code>&amp;lt;</code> → &lt;</div>
+      <div class="char-item"><code>&amp;gt;</code> → &gt;</div>
+      <div class="char-item"><code>&amp;amp;</code> → &amp;</div>
+      <div class="char-item"><code>&amp;nbsp;</code> → 空格</div>
+      <div class="char-item"><code>&amp;copy;</code> → &copy;</div>
+      <div class="char-item"><code>&amp;reg;</code> → &reg;</div>
+      <div class="char-item"><code>&amp;trade;</code> → &trade;</div>
+      <div class="char-item"><code>&amp;euro;</code> → &euro;</div>
+    </div>
+  </div>
+</body>
+</html>

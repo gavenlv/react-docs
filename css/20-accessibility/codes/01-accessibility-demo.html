@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS 无障碍访问示例</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 40px 20px;
+      background: #f5f5f5;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 40px;
+    }
+
+    .demo-section {
+      margin: 40px auto;
+      max-width: 1000px;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .demo-title {
+      font-size: 24px;
+      color: #2ecc71;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #2ecc71;
+    }
+
+    .demo-description {
+      background: #e7f9e7;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      border-left: 4px solid #2ecc71;
+    }
+
+    /* 焦点样式 */
+    .focus-visible-demo button {
+      margin: 10px;
+      padding: 12px 24px;
+      border: 2px solid #3498db;
+      background: white;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+
+    .focus-visible-demo button:focus {
+      outline: 3px solid #3498db;
+      outline-offset: 2px;
+    }
+
+    .focus-visible-demo button:focus-visible {
+      outline: 3px solid #2ecc71;
+      outline-offset: 2px;
+    }
+
+    /* 颜色对比度 */
+    .contrast-good {
+      background: #2c3e50;
+      color: #ecf0f1;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    .contrast-bad {
+      background: #95a5a6;
+      color: #bdc3c7;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    /* 跳过链接 */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2c3e50;
+      color: white;
+      padding: 8px 16px;
+      z-index: 100;
+      text-decoration: none;
+      border-radius: 0 0 5px 0;
+    }
+
+    .skip-link:focus {
+      top: 0;
+    }
+
+    /* 屏幕阅读器专用 */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+
+    /* 可见但仅对屏幕阅读器 */
+    .sr-only-focusable:focus,
+    .sr-only-focusable:active {
+      position: static;
+      width: auto;
+      height: auto;
+      padding: 10px 20px;
+      margin: 0;
+      overflow: visible;
+      clip: auto;
+      white-space: normal;
+    }
+
+    /* 减少动画 */
+    @media (prefers-reduced-motion: reduce) {
+      .animated-box {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+
+    .animated-box {
+      width: 100px;
+      height: 100px;
+      background: #3498db;
+      border-radius: 8px;
+      animation: pulse 2s ease-in-out infinite;
+      margin: 20px;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    /* 高对比度模式 */
+    @media (prefers-contrast: high) {
+      .high-contrast-demo {
+        border: 2px solid black;
+        background: white;
+        color: black;
+      }
+    }
+
+    .high-contrast-demo {
+      padding: 20px;
+      border-radius: 8px;
+      background: #ecf0f1;
+      margin: 20px 0;
+    }
+
+    /* 表单标签 */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+
+    .form-input {
+      width: 100%;
+      max-width: 400px;
+      padding: 10px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    .form-input:focus {
+      outline: 3px solid #3498db;
+      outline-offset: 2px;
+      border-color: #3498db;
+    }
+
+    .form-error {
+      color: #e74c3c;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+
+    /* 按钮状态 */
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 10px;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background: #3498db;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #2980b9;
+    }
+
+    .btn-primary:focus {
+      outline: 3px solid #3498db;
+      outline-offset: 2px;
+    }
+
+    .btn-primary:disabled {
+      background: #bdc3c7;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    /* 链接样式 */
+    .accessible-link {
+      color: #3498db;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .accessible-link:hover {
+      color: #2980b9;
+    }
+
+    .accessible-link:focus {
+      outline: 3px solid #3498db;
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
+
+    /* 隐藏内容但保持可访问 */
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* 代码块 */
+    .code-block {
+      background: #2c3e50;
+      color: #ecf0f1;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      overflow-x: auto;
+      margin: 15px 0;
+      line-height: 1.6;
+    }
+
+    .code-title {
+      color: #2ecc71;
+      font-weight: bold;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .comment {
+      color: #95a5a6;
+    }
+
+    .label {
+      display: inline-block;
+      background: #2ecc71;
+      color: white;
+      padding: 3px 10px;
+      border-radius: 3px;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+
+    .tip-box {
+      background: #e7f9e7;
+      border: 1px solid #2ecc71;
+      padding: 15px;
+      border-radius: 5px;
+      margin: 15px 0;
+    }
+
+    .tip-box strong {
+      color: #27ae60;
+    }
+
+    /* 错误示例 */
+    .error-example {
+      background: #f8d7da;
+      border: 1px solid #e74c3c;
+      padding: 15px;
+      border-radius: 5px;
+      margin: 15px 0;
+    }
+
+    .error-example strong {
+      color: #c0392b;
+    }
+
+    /* 成功示例 */
+    .success-example {
+      background: #d4edda;
+      border: 1px solid #28a745;
+      padding: 15px;
+      border-radius: 5px;
+      margin: 15px 0;
+    }
+
+    .success-example strong {
+      color: #155724;
+    }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link">跳到主要内容</a>
+
+  <h1>CSS 无障碍访问示例</h1>
+
+  <main id="main-content">
+    <div class="demo-section">
+      <h2 class="demo-title">1. 焦点样式（Focus Styles）</h2>
+      <div class="demo-description">
+        为键盘用户提供清晰的焦点指示
+      </div>
+
+      <div class="code-block">
+        <span class="code-title">焦点样式示例：</span>
+        button:focus {<br>
+        &nbsp;&nbsp;outline: 3px solid #3498db;<br>
+        &nbsp;&nbsp;outline-offset: 2px;<br>
+        }<br><br>
+
+        <span class="comment">/* 仅在键盘导航时显示 */</span><br>
+        button:focus-visible {<br>
+        &nbsp;&nbsp;outline: 3px solid #2ecc71;<br>
+        &nbsp;&nbsp;outline-offset: 2px;<br>
+        }
+      </div>
+
+      <div class="focus-visible-demo">
+        <p>使用 Tab 键导航，查看焦点样式：</p>
+        <button>按钮 1</button>
+        <button>按钮 2</button>
+        <button>按钮 3</button>
+      </div>
+
+      <div class="tip-box">
+        <strong>💡 提示：</strong>永远不要移除 outline，除非提供了替代的焦点样式。
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2 class="demo-title">2. 颜色对比度</h2>
+      <div class="demo-description">
+        确保文本与背景之间有足够的对比度
+      </div>
+
+      <div class="success-example">
+        <strong>✅ 好的对比度（7.5:1）：</strong>
+        <div class="contrast-good">
+          这段文字有足够的对比度，易于阅读。
+        </div>
+      </div>
+
+      <div class="error-example">
+        <strong>❌ 差的对比度（1.5:1）：</strong>
+        <div class="contrast-bad">
+          这段文字对比度不足，难以阅读。
+        </div>
+      </div>
+
+      <div class="tip-box">
+        <strong>💡 WCAG 标准：</strong><br>
+        - AA 级别：文本至少 4.5:1，大文本 3:1<br>
+        - AAA 级别：文本至少 7:1，大文本 4.5:1
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2 class="demo-title">3. 屏幕阅读器专用内容</h2>
+      <div class="demo-description">
+        为屏幕阅读器提供额外的上下文信息
+      </div>
+
+      <div class="code-block">
+        <span class="code-title">视觉隐藏但屏幕阅读器可读：</span>
+        .sr-only {<br>
+        &nbsp;&nbsp;position: absolute;<br>
+        &nbsp;&nbsp;width: 1px;<br>
+        &nbsp;&nbsp;height: 1px;<br>
+        &nbsp;&nbsp;padding: 0;<br>
+        &nbsp;&nbsp;margin: -1px;<br>
+        &nbsp;&nbsp;overflow: hidden;<br>
+        &nbsp;&nbsp;clip: rect(0, 0, 0, 0);<br>
+        &nbsp;&nbsp;white-space: nowrap;<br>
+        &nbsp;&nbsp;border-width: 0;<br>
+        }
+      </div>
+
+      <button class="btn btn-primary">
+        <span aria-hidden="true">✓</span>
+        <span class="sr-only">确认提交</span>
+        提交
+      </button>
+
+      <div class="tip-box">
+        <strong>💡 提示：</strong>使用 <code>aria-hidden="true"</code> 隐藏装饰性内容，避免屏幕阅读器重复读取。
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2 class="demo-title">4. 减少动画（prefers-reduced-motion）</h2>
+      <div class="demo-description">
+        尊重用户的动画偏好设置
+      </div>
+
+      <div class="code-block">
+        <span class="code-title">尊重用户偏好：</span>
+        @media (prefers-reduced-motion: reduce) {<br>
+        &nbsp;&nbsp;*, *::before, *::after {<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;animation-duration: 0.01ms !important;<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;animation-iteration-count: 1 !important;<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;transition-duration: 0.01ms !important;<br>
+        &nbsp;&nbsp;}<br>
+        }
+      </div>
+
+      <div class="animated-box"></div>
+
+      <div class="tip-box">
+        <strong>💡 提示：</strong>在系统设置中开启"减少动态效果"，动画会自动禁用。
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2 class="demo-title">5. 高对比度模式</h2>
+      <div class="demo-description">
+        支持高对比度模式
+      </div>
+
+      <div class="code-block">
+        <span class="code-title">高对比度媒体查询：</span>
+        @media (prefers-contrast: high) {<br>
+        &nbsp;&nbsp;.button {<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;border: 2px solid currentColor;<br>
+        &nbsp;&nbsp;}<br>
+        }
+      </div>
+
+      <div class="high-contrast-demo">
+        <p>这个容器在高对比度模式下会有不同的样式。</p>
+        <p>在系统设置中开启高对比度模式查看效果。</p>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2 class="demo-title">6. 表单无障碍</h2>
+      <div class="demo-description">
+        确保表单对所有用户可用
+      </div>
+
+      <form>
+        <div class="form-group">
+          <label for="username" class="form-label">
+            用户名 <span aria-label="必填">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="username" 
+            class="form-input"
+            aria-required="true"
+            aria-describedby="username-hint"
+            placeholder="请输入用户名"
+          >
+          <span id="username-hint" class="form-error">
+            用户名至少需要 3 个字符
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="email" class="form-label">邮箱</label>
+          <input 
+            type="email" 
+            id="email" 
+            class="form-input"
+            aria-invalid="true"
+            aria-describedby="email-error"
+            placeholder="请输入邮箱"
+          >
+          <span id="email-error" class="form-error" role="alert">
+            请输入有效的邮箱地址
+          </span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">提交</button>
+      </form>
+
+      <div class="tip-box">
+        <strong>💡 提示：</strong>使用 <code>aria-describedby</code> 关联提示信息，<code>aria-invalid</code> 标记错误状态。
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2 class="demo-title">7. 链接和按钮</h2>
+      <div class="demo-description">
+        确保交互元素易于识别和操作
+      </div>
+
+      <div class="error-example">
+        <strong>❌ 避免的做法：</strong>
+        <div style="margin-top: 10px;">
+          <a href="#" style="color: #3498db; text-decoration: none;">点击这里</a>
+          <span style="color: #95a5a6; margin-left: 20px;">（链接没有下划线，难以识别）</span>
+        </div>
+      </div>
+
+      <div class="success-example">
+        <strong>✅ 推荐的做法：</strong>
+        <div style="margin-top: 10px;">
+          <a href="#" class="accessible-link">查看更多信息</a>
+          <span style="color: #95a5a6; margin-left: 20px;">（链接有下划线，清晰可见）</span>
+        </div>
+      </div>
+
+      <div class="tip-box">
+        <strong>💡 提示：</strong>链接应该有清晰的下划线或背景色，确保用户能够识别。
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2 class="demo-title">8. 禁用状态</h2>
+      <div class="demo-description">
+        清晰地表示禁用状态
+      </div>
+
+      <div>
+        <button class="btn btn-primary">正常按钮</button>
+        <button class="btn btn-primary" disabled aria-disabled="true">禁用按钮</button>
+      </div>
+
+      <div class="code-block">
+        <span class="code-title">禁用状态样式：</span>
+        button:disabled {<br>
+        &nbsp;&nbsp;background: #bdc3c7;<br>
+        &nbsp;&nbsp;cursor: not-allowed;<br>
+        &nbsp;&nbsp;opacity: 0.6;<br>
+        }
+      </div>
+
+      <div class="tip-box">
+        <strong>💡 提示：</strong>使用 <code>aria-disabled="true"</code> 提供语义化的禁用状态。
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2 class="demo-title">9. 响应式字体</h2>
+      <div class="demo-description">
+        使用相对单位确保文本可缩放
+      </div>
+
+      <div class="code-block">
+        <span class="code-title">推荐使用相对单位：</span>
+        body {<br>
+        &nbsp;&nbsp;font-size: 100%; <span class="comment">/* 或 16px */</span><br>
+        }<br><br>
+
+        h1 {<br>
+        &nbsp;&nbsp;font-size: 2rem; <span class="comment">/* 相对于根元素 */</span><br>
+        }<br><br>
+
+        .text {<br>
+        &nbsp;&nbsp;font-size: clamp(1rem, 2vw, 1.5rem); <span class="comment">/* 响应式 */</span><br>
+        }
+      </div>
+
+      <div class="tip-box">
+        <strong>💡 提示：</strong>避免使用固定像素值，使用 rem、em 或 vw 等相对单位。
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2 class="demo-title">10. 无障碍检查清单</h2>
+      <div class="demo-description">
+        CSS 无障碍要点总结
+      </div>
+
+      <ul style="list-style: none; padding: 0;">
+        <li style="padding: 10px; margin: 5px 0; background: #f9f9f9; border-radius: 5px;">
+          ✅ 提供清晰的焦点样式
+        </li>
+        <li style="padding: 10px; margin: 5px 0; background: #f9f9f9; border-radius: 5px;">
+          ✅ 确保足够的颜色对比度
+        </li>
+        <li style="padding: 10px; margin: 5px 0; background: #f9f9f9; border-radius: 5px;">
+          ✅ 支持键盘导航
+        </li>
+        <li style="padding: 10px; margin: 5px 0; background: #f9f9f9; border-radius: 5px;">
+          ✅ 尊重用户的动画偏好
+        </li>
+        <li style="padding: 10px; margin: 5px 0; background: #f9f9f9; border-radius: 5px;">
+          ✅ 使用相对单位设置字体大小
+        </li>
+        <li style="padding: 10px; margin: 5px 0; background: #f9f9f9; border-radius: 5px;">
+          ✅ 不要仅依赖颜色传达信息
+        </li>
+        <li style="padding: 10px; margin: 5px 0; background: #f9f9f9; border-radius: 5px;">
+          ✅ 为屏幕阅读器提供隐藏内容
+        </li>
+        <li style="padding: 10px; margin: 5px 0; background: #f9f9f9; border-radius: 5px;">
+          ✅ 确保交互元素有足够大的点击区域
+        </li>
+      </ul>
+    </div>
+  </main>
+</body>
+</html>

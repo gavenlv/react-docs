@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>03 - 组件基础 代码示例索引</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; margin: 0; }
+    .container { max-width: 900px; margin: 0 auto; }
+    h1 { color: white; text-align: center; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+    .subtitle { color: rgba(255,255,255,0.8); text-align: center; margin-bottom: 40px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+    .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); transition: transform 0.3s, box-shadow 0.3s; text-decoration: none; color: inherit; display: block; }
+    .card:hover { transform: translateY(-5px); box-shadow: 0 15px 50px rgba(0,0,0,0.3); }
+    .card-number { display: inline-block; width: 32px; height: 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 50%; text-align: center; line-height: 32px; font-weight: bold; margin-bottom: 10px; }
+    .card-title { margin: 0 0 8px 0; color: #333; font-size: 16px; }
+    .card-desc { margin: 0; color: #666; font-size: 13px; line-height: 1.4; }
+  </style>
+</head>
+<body>
+  <div className="container">
+    <h1>03 - 组件基础</h1>
+    <p class="subtitle">代码示例索引 - 点击任意卡片打开示例</p>
+    
+    <div class="grid">
+      <a href="01-basic-component.html" class="card">
+        <span class="card-number">1</span>
+        <h3 class="card-title">基本函数组件</h3>
+        <p class="card-desc">学习如何定义和使用函数组件，包括箭头函数形式</p>
+      </a>
+      
+      <a href="02-component-naming.html" class="card">
+        <span class="card-number">2</span>
+        <h3 class="card-title">组件命名规则</h3>
+        <p class="card-desc">了解为什么组件必须以大写字母开头</p>
+      </a>
+      
+      <a href="03-props-basics.html" class="card">
+        <span class="card-number">3</span>
+        <h3 class="card-title">Props 基础</h3>
+        <p class="card-desc">学习如何定义和使用 Props，包括解构赋值</p>
+      </a>
+      
+      <a href="04-props-defaults.html" class="card">
+        <span class="card-number">4</span>
+        <h3 class="card-title">Props 默认值</h3>
+        <p class="card-desc">两种设置 Props 默认值的方法</p>
+      </a>
+      
+      <a href="05-props-immutable.html" class="card">
+        <span class="card-number">5</span>
+        <h3 class="card-title">Props 只读性</h3>
+        <p class="card-desc">理解 Props 是只读的，不能在组件内部修改</p>
+      </a>
+      
+      <a href="06-component-composition.html" class="card">
+        <span class="card-number">6</span>
+        <h3 class="card-title">组件组合</h3>
+        <p class="card-desc">使用 children 属性实现灵活的组件组合</p>
+      </a>
+      
+      <a href="07-button-specialization.html" class="card">
+        <span class="card-number">7</span>
+        <h3 class="card-title">组件特殊化</h3>
+        <p class="card-desc">通过 props 参数化实现组件的特殊化使用</p>
+      </a>
+      
+      <a href="08-container-presentation.html" class="card">
+        <span class="card-number">8</span>
+        <h3 class="card-title">容器与展示组件</h3>
+        <p class="card-desc">学习分离数据逻辑和 UI 展示的组件模式</p>
+      </a>
+      
+      <a href="09-reusable-button.html" class="card">
+        <span class="card-number">9</span>
+        <h3 class="card-title">可复用组件设计</h3>
+        <p class="card-desc">设计可配置的、可复用的组件</p>
+      </a>
+      
+      <a href="10-user-card-system.html" class="card">
+        <span class="card-number">10</span>
+        <h3 class="card-title">用户卡片系统实战</h3>
+        <p class="card-desc">综合运用所学知识构建完整的组件系统</p>
+      </a>
+      
+      <a href="11-component-rerender.html" class="card">
+        <span class="card-number">11</span>
+        <h3 class="card-title">组件重新渲染机制</h3>
+        <p class="card-desc">理解什么情况下组件会重新渲染</p>
+      </a>
+      
+      <a href="12-react-memo.html" class="card">
+        <span class="card-number">12</span>
+        <h3 class="card-title">React.memo 优化渲染</h3>
+        <p class="card-desc">使用 React.memo 避免不必要的子组件渲染</p>
+      </a>
+      
+      <a href="13-react-memo-pitfall.html" class="card">
+        <span class="card-number">13</span>
+        <h3 class="card-title">React.memo 注意事项</h3>
+        <p class="card-desc">React.memo 的浅比较特性和常见陷阱</p>
+      </a>
+    </div>
+  </div>
+</body>
+</html>

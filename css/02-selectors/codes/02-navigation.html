@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>导航栏示例</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    nav {
+      background: #2c3e50;
+      padding: 0 20px;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+    }
+
+    nav > ul > li {
+      position: relative;
+    }
+
+    nav > ul > li > a {
+      display: block;
+      padding: 20px 25px;
+      color: white;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+
+    nav > ul > li > a:hover {
+      background: #34495e;
+    }
+
+    nav > ul > li > a.active {
+      background: #3498db;
+    }
+
+    nav ul ul {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: #34495e;
+      min-width: 200px;
+      flex-direction: column;
+    }
+
+    nav ul li:hover > ul {
+      display: flex;
+    }
+
+    nav ul ul li a {
+      padding: 15px 20px;
+      border-bottom: 1px solid #3d566e;
+      color: white;
+      text-decoration: none;
+      display: block;
+    }
+
+    nav ul ul li:last-child a {
+      border-bottom: none;
+    }
+
+    nav ul ul li a:hover {
+      background: #3d566e;
+    }
+
+    .content {
+      padding: 40px 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+
+    p {
+      color: #666;
+      line-height: 1.8;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="#" class="active">首页</a></li>
+      <li>
+        <a href="#">产品</a>
+        <ul>
+          <li><a href="#">产品 A</a></li>
+          <li><a href="#">产品 B</a></li>
+          <li><a href="#">产品 C</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="#">服务</a>
+        <ul>
+          <li><a href="#">咨询服务</a></li>
+          <li><a href="#">技术支持</a></li>
+        </ul>
+      </li>
+      <li><a href="#">关于我们</a></li>
+      <li><a href="#">联系方式</a></li>
+    </ul>
+  </nav>
+
+  <div class="content">
+    <h1>导航栏示例</h1>
+    <p>这是一个使用 CSS 选择器创建的导航栏示例，包含了下拉菜单功能。鼠标悬停在"产品"或"服务"上可以看到下拉菜单效果。</p>
+  </div>
+</body>
+</html>

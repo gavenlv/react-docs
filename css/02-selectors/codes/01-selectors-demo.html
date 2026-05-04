@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>选择器示例</title>
+  <style>
+    /* 元素选择器 */
+    p {
+      color: #555;
+      line-height: 1.6;
+    }
+
+    /* 类选择器 */
+    .highlight {
+      background: #fff3cd;
+      padding: 5px 10px;
+      border-radius: 3px;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    /* ID 选择器 */
+    #main-title {
+      color: #2c3e50;
+      font-size: 32px;
+      border-bottom: 3px solid #3498db;
+      padding-bottom: 10px;
+    }
+
+    /* 后代选择器 */
+    .article p {
+      color: #666;
+      margin-bottom: 15px;
+    }
+
+    /* 子选择器 */
+    .menu > li {
+      list-style: none;
+      display: inline-block;
+      margin-right: 20px;
+    }
+
+    /* 相邻兄弟选择器 */
+    h2 + p {
+      font-weight: bold;
+      color: #3498db;
+    }
+
+    /* 属性选择器 */
+    input[type="text"] {
+      border: 2px solid #3498db;
+      padding: 10px;
+      border-radius: 5px;
+      width: 200px;
+    }
+
+    input[type="email"] {
+      border: 2px solid #27ae60;
+      padding: 10px;
+      border-radius: 5px;
+      width: 200px;
+    }
+
+    /* 伪类选择器 */
+    a:hover {
+      color: #e74c3c;
+      text-decoration: underline;
+    }
+
+    li:nth-child(odd) {
+      background: #f9f9f9;
+    }
+
+    li:nth-child(even) {
+      background: white;
+    }
+
+    /* 伪元素选择器 */
+    .quote::before {
+      content: '"';
+      font-size: 40px;
+      color: #3498db;
+      line-height: 0;
+      vertical-align: bottom;
+    }
+
+    .quote::after {
+      content: '"';
+      font-size: 40px;
+      color: #3498db;
+      line-height: 0;
+      vertical-align: bottom;
+    }
+
+    /* 组合选择器 */
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .card .card-title {
+      font-size: 24px;
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+
+    .card .card-content {
+      color: #666;
+    }
+
+    /* 示例样式 */
+    .demo-section {
+      margin: 30px 0;
+      padding: 20px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+    }
+
+    .demo-title {
+      color: #3498db;
+      font-size: 20px;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #3498db;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="main-title" class="text-center">CSS 选择器完整示例</h1>
+
+  <div class="demo-section">
+    <h2 class="demo-title">1. 元素选择器</h2>
+    <p>这是一个普通的段落，使用元素选择器设置样式。</p>
+    <p class="highlight">这是一个带有 highlight 类的段落。</p>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">2. 类选择器</h2>
+    <p class="text-center">这段文字居中对齐。</p>
+    <p class="highlight">这段文字有高亮背景。</p>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">3. 后代选择器</h2>
+    <div class="article">
+      <p>这是 article 内部的段落（后代选择器）。</p>
+      <p>这也是 article 内部的段落。</p>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">4. 子选择器</h2>
+    <ul class="menu">
+      <li><a href="#">首页</a></li>
+      <li><a href="#">产品</a></li>
+      <li><a href="#">关于</a></li>
+    </ul>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">5. 相邻兄弟选择器</h2>
+    <h2>标题</h2>
+    <p>这是紧跟在 h2 后面的段落（相邻兄弟选择器）。</p>
+    <p>这不是紧跟在 h2 后面的段落。</p>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">6. 属性选择器</h2>
+    <input type="text" placeholder="文本输入框">
+    <input type="email" placeholder="邮箱输入框">
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">7. 伪类选择器</h2>
+    <ul>
+      <li>列表项 1（奇数行）</li>
+      <li>列表项 2（偶数行）</li>
+      <li>列表项 3（奇数行）</li>
+      <li>列表项 4（偶数行）</li>
+    </ul>
+    <a href="#">鼠标悬停查看效果</a>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">8. 伪元素选择器</h2>
+    <p class="quote">这是一段引用文字</p>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">9. 组合选择器</h2>
+    <div class="card">
+      <h3 class="card-title">卡片标题</h3>
+      <p class="card-content">这是卡片内容，展示了组合选择器的使用。</p>
+    </div>
+  </div>
+</body>
+</html>

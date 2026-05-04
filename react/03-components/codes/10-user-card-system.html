@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>10 - 用户卡片系统实战</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; margin: 0; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 { color: white; text-align: center; margin-bottom: 30px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+    .user-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+    .user-card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); transition: transform 0.3s; }
+    .user-card:hover { transform: translateY(-5px); }
+    .avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 32px; font-weight: bold; margin-bottom: 15px; }
+    .user-info h3 { margin: 0 0 5px 0; color: #333; }
+    .role { color: #666; font-size: 14px; margin: 0 0 15px 0; }
+    .badges { display: flex; flex-wrap: wrap; gap: 8px; }
+    .badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+    .badge-success { background: #e8f5e9; color: #4caf50; }
+    .badge-info { background: #e3f2fd; color: #2196f3; }
+    .badge-warning { background: #fff3e0; color: #ff9800; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    // Avatar.jsx - 头像组件
+    function Avatar({ name, size = 'medium' }) {
+      const sizes = { small: 50, medium: 80, large: 100 };
+      const fontSize = sizes[size] * 0.4;
+      
+      return (
+        <div 
+          className="avatar" 
+          style={{ width: sizes[size], height: sizes[size], fontSize }}
+        >
+          {name.charAt(0)}
+        </div>
+      );
+    }
+
+    // Badge.jsx - 徽章组件
+    function Badge({ text, type = 'info' }) {
+      return (
+        <span className={`badge badge-${type}`}>
+          {text}
+        </span>
+      );
+    }
+
+    // UserCard.jsx - 用户卡片组件
+    function UserCard({ user }) {
+      return (
+        <div className="user-card">
+          <Avatar name={user.name} size="large" />
+          <div className="user-info">
+            <h3>{user.name}</h3>
+            <p className="role">{user.role}</p>
+            <div className="badges">
+              {user.skills.map(skill => (
+                <Badge key={skill} text={skill} type="success" />
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // App.jsx - 应用主组件
+    function App() {
+      const users = [
+        {
+          id: 1,
+          name: '张三',
+          role: '前端工程师',
+          avatar: '/avatars/zhangsan.jpg',
+          skills: ['React', 'TypeScript', 'Node.js']
+        },
+        {
+          id: 2,
+          name: '李四',
+          role: '后端工程师',
+          avatar: '/avatars/lisi.jpg',
+          skills: ['Python', 'Django', 'PostgreSQL']
+        },
+        {
+          id: 3,
+          name: '王五',
+          role: '全栈工程师',
+          avatar: '/avatars/wangwu.jpg',
+          skills: ['React', 'Node.js', 'MongoDB']
+        },
+        {
+          id: 4,
+          name: '赵六',
+          role: 'UI 设计师',
+          avatar: '/avatars/zhaoliu.jpg',
+          skills: ['Figma', 'Sketch', 'CSS']
+        },
+      ];
+
+      return (
+        <div className="container">
+          <h1>团队成员</h1>
+          <div className="user-grid">
+            {users.map(user => (
+              <UserCard key={user.id} user={user} />
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>

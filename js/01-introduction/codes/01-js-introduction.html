@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JavaScript 引入方式对比</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 40px 20px;
+      background: #f5f5f5;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 40px;
+    }
+    .demo-section {
+      margin: 30px 0;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .demo-title {
+      font-size: 24px;
+      color: #f7df1e;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f7df1e;
+    }
+    .demo-description {
+      background: #fffbe6;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      border-left: 4px solid #f7df1e;
+    }
+    .code-block {
+      background: #282c34;
+      color: #abb2bf;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      overflow-x: auto;
+      margin: 15px 0;
+      line-height: 1.6;
+    }
+    .code-title {
+      color: #f7df1e;
+      font-weight: bold;
+      margin-bottom: 10px;
+      display: block;
+    }
+    .keyword { color: #c678dd; }
+    .string { color: #98c379; }
+    .function { color: #61afef; }
+    .comment { color: #5c6370; font-style: italic; }
+    .tag { color: #e06c75; }
+    button {
+      padding: 12px 24px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+      transition: all 0.3s;
+    }
+    .btn-primary {
+      background: #f7df1e;
+      color: #000;
+    }
+    .btn-primary:hover {
+      background: #e5ce1b;
+      transform: translateY(-2px);
+    }
+    .btn-secondary {
+      background: #667eea;
+      color: white;
+    }
+    .btn-secondary:hover {
+      background: #5a6fd6;
+      transform: translateY(-2px);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background: #f5f5f5;
+      font-weight: 600;
+    }
+    .output {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 15px;
+      min-height: 50px;
+    }
+  </style>
+</head>
+<body>
+  <h1>JavaScript 三种引入方式演示</h1>
+  
+  <div class="demo-section">
+    <h2 class="demo-title">1. 行内脚本（Inline Script）</h2>
+    <div class="demo-description">
+      直接在 HTML 标签的事件属性中写 JavaScript 代码
+    </div>
+    <div class="code-block">
+      <span class="code-title">HTML：</span>
+      &lt;<span class="tag">button</span> <span class="keyword">onclick</span>="<span class="function">alert</span>(<span class="string">'你点击了按钮！'</span>)"&gt;点击我&lt;/<span class="tag">button</span>&gt;
+    </div>
+    <button onclick="alert('你点击了按钮！')">点击我（行内脚本）</button>
+    <div class="demo-description" style="margin-top: 15px; background: #fff2f0; border-left-color: #e74c3c;">
+      <strong>注意：</strong>行内脚本不推荐在实际项目中使用，仅用于快速测试
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">2. 内部脚本（Internal Script）</h2>
+    <div class="demo-description">
+      在 HTML 文件的 &lt;script&gt; 标签中写 JavaScript
+    </div>
+    <div class="code-block">
+      <span class="code-title">HTML：</span>
+      &lt;<span class="tag">script</span>&gt;<br>
+      &nbsp;&nbsp;<span class="keyword">function</span> <span class="function">sayHello</span>() {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="function">alert</span>(<span class="string">'你好，世界！'</span>);<br>
+      &nbsp;&nbsp;}<br>
+      &lt;/<span class="tag">script</span>&gt;<br><br>
+      &lt;<span class="tag">button</span> <span class="keyword">onclick</span>="<span class="function">sayHello</span>()"&gt;点击问好&lt;/<span class="tag">button</span>&gt;
+    </div>
+    <button onclick="sayHello()">点击问好（内部脚本）</button>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">3. 外部脚本（External Script）⭐ 推荐</h2>
+    <div class="demo-description">
+      将 JavaScript 写在单独的 .js 文件中，然后在 HTML 中引入
+    </div>
+    <div class="code-block">
+      <span class="code-title">index.html：</span>
+      &lt;<span class="tag">script</span> <span class="keyword">src</span>="<span class="string">js/main.js</span>"&gt;&lt;/<span class="tag">script</span>&gt;<br><br>
+      <span class="code-title">js/main.js：</span>
+      <span class="keyword">const</span> btn = document.<span class="function">getElementById</span>(<span class="string">'myBtn'</span>);<br>
+      btn.<span class="function">addEventListener</span>(<span class="string">'click'</span>, () => {<br>
+      &nbsp;&nbsp;<span class="function">alert</span>(<span class="string">'外部脚本被执行！'</span>);<br>
+      });
+    </div>
+    <button id="externalBtn" class="btn-secondary">点击我（模拟外部脚本）</button>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">对比总结</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>方式</th>
+          <th>优点</th>
+          <th>缺点</th>
+          <th>适用场景</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>行内脚本</strong></td>
+          <td>简单直接</td>
+          <td>难以维护、无法复用</td>
+          <td>临时测试</td>
+        </tr>
+        <tr>
+          <td><strong>内部脚本</strong></td>
+          <td>集中管理、无需额外文件</td>
+          <td>无法跨页面复用</td>
+          <td>单页面应用</td>
+        </tr>
+        <tr>
+          <td><strong>外部脚本</strong></td>
+          <td>可复用、易维护、可缓存</td>
+          <td>需要额外请求</td>
+          <td>所有项目（推荐）</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">Console 输出示例</h2>
+    <div class="demo-description">
+      打开浏览器开发者工具（F12）查看 Console 输出
+    </div>
+    <button class="btn-primary" onclick="demoConsoleLog()">console.log()</button>
+    <button class="btn-primary" onclick="demoConsoleWarn()">console.warn()</button>
+    <button class="btn-primary" onclick="demoConsoleError()">console.error()</button>
+    <button class="btn-primary" onclick="demoConsoleTable()">console.table()</button>
+    <button class="btn-primary" onclick="demoConsoleTime()">console.time()</button>
+    <div class="output" id="consoleOutput">
+      点击按钮查看效果（同时打开 F12 控制台）
+    </div>
+  </div>
+
+  <script>
+    function sayHello() {
+      alert('你好，世界！');
+    }
+
+    document.getElementById('externalBtn').addEventListener('click', function() {
+      alert('外部脚本被执行！');
+    });
+
+    function demoConsoleLog() {
+      console.log('这是一条普通日志信息');
+      document.getElementById('consoleOutput').textContent = '已输出: console.log("这是一条普通日志信息")';
+    }
+
+    function demoConsoleWarn() {
+      console.warn('这是一条警告信息');
+      document.getElementById('consoleOutput').textContent = '已输出: console.warn("这是一条警告信息")';
+    }
+
+    function demoConsoleError() {
+      console.error('这是一条错误信息');
+      document.getElementById('consoleOutput').textContent = '已输出: console.error("这是一条错误信息")';
+    }
+
+    function demoConsoleTable() {
+      const users = [
+        { name: '张三', age: 25, city: '北京' },
+        { name: '李四', age: 30, city: '上海' },
+        { name: '王五', age: 28, city: '广州' }
+      ];
+      console.table(users);
+      document.getElementById('consoleOutput').textContent = '已输出: console.table(用户数据数组)';
+    }
+
+    function demoConsoleTime() {
+      console.time('循环耗时');
+      let sum = 0;
+      for (let i = 0; i < 1000000; i++) {
+        sum += i;
+      }
+      console.timeEnd('循环耗时');
+      document.getElementById('consoleOutput').textContent = '已输出: console.time/timeEnd("循环耗时")';
+    }
+  </script>
+</body>
+</html>

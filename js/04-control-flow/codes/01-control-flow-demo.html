@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>流程控制演示</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 40px 20px;
+      background: #f5f5f5;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 40px;
+    }
+    .demo-section {
+      margin: 30px 0;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .demo-title {
+      font-size: 24px;
+      color: #f7df1e;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f7df1e;
+    }
+    .code-block {
+      background: #282c34;
+      color: #abb2bf;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      overflow-x: auto;
+      margin: 15px 0;
+      line-height: 1.6;
+    }
+    .keyword { color: #c678dd; }
+    .string { color: #98c379; }
+    .number { color: #d19a66; }
+    .comment { color: #5c6370; font-style: italic; }
+    button {
+      padding: 10px 20px;
+      font-size: 14px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+      transition: all 0.3s;
+    }
+    .btn-primary {
+      background: #f7df1e;
+      color: #000;
+    }
+    .btn-primary:hover {
+      background: #e5ce1b;
+    }
+    .output {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 15px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      white-space: pre-wrap;
+    }
+    .multiplication-table {
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      gap: 5px;
+      margin: 20px 0;
+    }
+    .mult-cell {
+      background: #667eea;
+      color: white;
+      padding: 10px 5px;
+      text-align: center;
+      border-radius: 5px;
+      font-size: 12px;
+    }
+    .grade-input {
+      padding: 10px;
+      font-size: 16px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      width: 100px;
+    }
+    .grade-result {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+    .grade-a { color: #27ae60; }
+    .grade-b { color: #3498db; }
+    .grade-c { color: #f39c12; }
+    .grade-d { color: #e67e22; }
+    .grade-f { color: #e74c3c; }
+    .guess-game {
+      text-align: center;
+      padding: 30px;
+    }
+    .guess-input {
+      padding: 15px;
+      font-size: 24px;
+      width: 150px;
+      text-align: center;
+      border: 2px solid #667eea;
+      border-radius: 10px;
+      margin: 10px;
+    }
+    .guess-hint {
+      font-size: 18px;
+      margin: 15px 0;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .hint-high { background: #ffebee; color: #c62828; }
+    .hint-low { background: #e3f2fd; color: #1565c0; }
+    .hint-correct { background: #e8f5e9; color: #2e7d32; }
+  </style>
+</head>
+<body>
+  <h1>流程控制演示</h1>
+  
+  <div class="demo-section">
+    <h2 class="demo-title">if-else 条件语句</h2>
+    <div class="code-block">
+      <span class="keyword">if</span> (score >= <span class="number">90</span>) {<br>
+      &nbsp;&nbsp;grade = <span class="string">'A'</span>;<br>
+      } <span class="keyword">else if</span> (score >= <span class="number">80</span>) {<br>
+      &nbsp;&nbsp;grade = <span class="string">'B'</span>;<br>
+      } <span class="keyword">else if</span> (score >= <span class="number">70</span>) {<br>
+      &nbsp;&nbsp;grade = <span class="string">'C'</span>;<br>
+      } <span class="keyword">else if</span> (score >= <span class="number">60</span>) {<br>
+      &nbsp;&nbsp;grade = <span class="string">'D'</span>;<br>
+      } <span class="keyword">else</span> {<br>
+      &nbsp;&nbsp;grade = <span class="string">'F'</span>;<br>
+      }
+    </div>
+    <div>
+      <label>输入分数：</label>
+      <input type="number" id="scoreInput" class="grade-input" value="85" min="0" max="100">
+      <button class="btn-primary" onclick="checkGrade()">查询等级</button>
+    </div>
+    <div class="grade-result" id="gradeResult">等级：B</div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">switch 语句</h2>
+    <div class="code-block">
+      <span class="keyword">switch</span> (day) {<br>
+      &nbsp;&nbsp;<span class="keyword">case</span> <span class="number">1</span>: dayName = <span class="string">'星期一'</span>; <span class="keyword">break</span>;<br>
+      &nbsp;&nbsp;<span class="keyword">case</span> <span class="number">2</span>: dayName = <span class="string">'星期二'</span>; <span class="keyword">break</span>;<br>
+      &nbsp;&nbsp;<span class="comment">// ...</span><br>
+      &nbsp;&nbsp;<span class="keyword">default</span>: dayName = <span class="string">'无效'</span>;<br>
+      }
+    </div>
+    <div>
+      <label>输入星期几 (1-7)：</label>
+      <input type="number" id="dayInput" class="grade-input" value="1" min="1" max="7">
+      <button class="btn-primary" onclick="checkDay()">查询</button>
+    </div>
+    <div class="output" id="dayResult">星期一</div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">for 循环 - 九九乘法表</h2>
+    <button class="btn-primary" onclick="generateTable()">生成乘法表</button>
+    <div class="multiplication-table" id="multTable"></div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">循环对比</h2>
+    <button class="btn-primary" onclick="demoForLoop()">for 循环</button>
+    <button class="btn-primary" onclick="demoWhileLoop()">while 循环</button>
+    <button class="btn-primary" onclick="demoForOf()">for...of</button>
+    <button class="btn-primary" onclick="demoForIn()">for...in</button>
+    <div class="output" id="loopOutput">点击按钮查看不同循环方式</div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">break 和 continue</h2>
+    <button class="btn-primary" onclick="demoBreak()">break 示例</button>
+    <button class="btn-primary" onclick="demoContinue()">continue 示例</button>
+    <div class="output" id="breakOutput">点击按钮查看效果</div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">猜数字游戏</h2>
+    <div class="guess-game">
+      <p>猜一个 1-100 的数字</p>
+      <input type="number" id="guessInput" class="guess-input" min="1" max="100">
+      <button class="btn-primary" onclick="makeGuess()">猜！</button>
+      <button class="btn-primary" onclick="resetGame()">重新开始</button>
+      <div class="guess-hint" id="guessHint">输入数字后点击"猜！"</div>
+      <div id="guessAttempts">已猜次数：0</div>
+    </div>
+  </div>
+
+  <script>
+    function checkGrade() {
+      const score = parseInt(document.getElementById('scoreInput').value);
+      let grade, className;
+      
+      if (score >= 90) {
+        grade = 'A';
+        className = 'grade-a';
+      } else if (score >= 80) {
+        grade = 'B';
+        className = 'grade-b';
+      } else if (score >= 70) {
+        grade = 'C';
+        className = 'grade-c';
+      } else if (score >= 60) {
+        grade = 'D';
+        className = 'grade-d';
+      } else {
+        grade = 'F';
+        className = 'grade-f';
+      }
+      
+      const result = document.getElementById('gradeResult');
+      result.textContent = `等级：${grade}`;
+      result.className = `grade-result ${className}`;
+    }
+
+    function checkDay() {
+      const day = parseInt(document.getElementById('dayInput').value);
+      let dayName;
+      
+      switch (day) {
+        case 1: dayName = '星期一'; break;
+        case 2: dayName = '星期二'; break;
+        case 3: dayName = '星期三'; break;
+        case 4: dayName = '星期四'; break;
+        case 5: dayName = '星期五'; break;
+        case 6: dayName = '星期六'; break;
+        case 7: dayName = '星期日'; break;
+        default: dayName = '无效的日期';
+      }
+      
+      document.getElementById('dayResult').textContent = dayName;
+    }
+
+    function generateTable() {
+      const container = document.getElementById('multTable');
+      container.innerHTML = '';
+      
+      for (let i = 1; i <= 9; i++) {
+        for (let j = 1; j <= i; j++) {
+          const cell = document.createElement('div');
+          cell.className = 'mult-cell';
+          cell.textContent = `${j}×${i}=${i*j}`;
+          container.appendChild(cell);
+        }
+        for (let k = i + 1; k <= 9; k++) {
+          const empty = document.createElement('div');
+          empty.className = 'mult-cell';
+          empty.style.visibility = 'hidden';
+          empty.textContent = `${k}×${i}=${i*k}`;
+          container.appendChild(empty);
+        }
+      }
+    }
+
+    function demoForLoop() {
+      let result = 'for 循环:\n';
+      for (let i = 0; i < 5; i++) {
+        result += `i = ${i}\n`;
+      }
+      document.getElementById('loopOutput').textContent = result;
+    }
+
+    function demoWhileLoop() {
+      let result = 'while 循环:\n';
+      let i = 0;
+      while (i < 5) {
+        result += `i = ${i}\n`;
+        i++;
+      }
+      document.getElementById('loopOutput').textContent = result;
+    }
+
+    function demoForOf() {
+      const fruits = ['苹果', '香蕉', '橙子'];
+      let result = 'for...of 遍历数组:\n';
+      for (const fruit of fruits) {
+        result += `${fruit}\n`;
+      }
+      document.getElementById('loopOutput').textContent = result;
+    }
+
+    function demoForIn() {
+      const user = { name: '张三', age: 25, city: '北京' };
+      let result = 'for...in 遍历对象:\n';
+      for (const key in user) {
+        result += `${key}: ${user[key]}\n`;
+      }
+      document.getElementById('loopOutput').textContent = result;
+    }
+
+    function demoBreak() {
+      let result = 'break 示例 (遇到 5 停止):\n';
+      for (let i = 0; i < 10; i++) {
+        if (i === 5) {
+          result += '遇到 5，break!\n';
+          break;
+        }
+        result += `i = ${i}\n`;
+      }
+      document.getElementById('breakOutput').textContent = result;
+    }
+
+    function demoContinue() {
+      let result = 'continue 示例 (跳过奇数):\n';
+      for (let i = 0; i < 10; i++) {
+        if (i % 2 === 1) {
+          continue;
+        }
+        result += `i = ${i}\n`;
+      }
+      document.getElementById('breakOutput').textContent = result;
+    }
+
+    let targetNumber = Math.floor(Math.random() * 100) + 1;
+    let attempts = 0;
+
+    function makeGuess() {
+      const guess = parseInt(document.getElementById('guessInput').value);
+      const hint = document.getElementById('guessHint');
+      attempts++;
+      
+      if (guess === targetNumber) {
+        hint.textContent = `🎉 恭喜！答案就是 ${targetNumber}！`;
+        hint.className = 'guess-hint hint-correct';
+      } else if (guess < targetNumber) {
+        hint.textContent = `${guess} 太小了，再试试！`;
+        hint.className = 'guess-hint hint-low';
+      } else {
+        hint.textContent = `${guess} 太大了，再试试！`;
+        hint.className = 'guess-hint hint-high';
+      }
+      
+      document.getElementById('guessAttempts').textContent = `已猜次数：${attempts}`;
+    }
+
+    function resetGame() {
+      targetNumber = Math.floor(Math.random() * 100) + 1;
+      attempts = 0;
+      document.getElementById('guessInput').value = '';
+      document.getElementById('guessHint').textContent = '输入数字后点击"猜！"';
+      document.getElementById('guessHint').className = 'guess-hint';
+      document.getElementById('guessAttempts').textContent = '已猜次数：0';
+    }
+
+    generateTable();
+  </script>
+</body>
+</html>

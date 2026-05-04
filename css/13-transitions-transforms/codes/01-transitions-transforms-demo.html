@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>过渡与变换示例</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 40px 20px;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 40px;
+    }
+
+    .demo-section {
+      margin: 40px auto;
+      max-width: 1000px;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .demo-title {
+      font-size: 24px;
+      color: #3498db;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #3498db;
+    }
+
+    .demo-description {
+      background: #e7f3ff;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      border-left: 4px solid #3498db;
+    }
+
+    /* 过渡演示 */
+    .transition-box {
+      width: 100px;
+      height: 100px;
+      background: #3498db;
+      margin: 20px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .transition-box:hover {
+      background: #e74c3c;
+      transform: scale(1.1);
+    }
+
+    /* 不同的过渡效果 */
+    .transition-demo {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .transition-item {
+      background: #ecf0f1;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .transition-item .box {
+      width: 80px;
+      height: 80px;
+      background: #3498db;
+      margin: 10px auto;
+      border-radius: 8px;
+    }
+
+    /* 不同的 timing-function */
+    .ease {
+      transition: all 0.5s ease;
+    }
+
+    .ease-in {
+      transition: all 0.5s ease-in;
+    }
+
+    .ease-out {
+      transition: all 0.5s ease-out;
+    }
+
+    .ease-in-out {
+      transition: all 0.5s ease-in-out;
+    }
+
+    .linear {
+      transition: all 0.5s linear;
+    }
+
+    .transition-item:hover .box {
+      transform: translateX(100px);
+      background: #e74c3c;
+    }
+
+    /* 变换演示 */
+    .transform-box {
+      width: 100px;
+      height: 100px;
+      background: #3498db;
+      margin: 20px;
+      border-radius: 8px;
+      transition: transform 0.3s ease;
+    }
+
+    /* translate */
+    .translate-x:hover {
+      transform: translateX(50px);
+    }
+
+    .translate-y:hover {
+      transform: translateY(50px);
+    }
+
+    .translate-xy:hover {
+      transform: translate(50px, 50px);
+    }
+
+    /* rotate */
+    .rotate:hover {
+      transform: rotate(45deg);
+    }
+
+    .rotate-3d:hover {
+      transform: rotateY(180deg);
+    }
+
+    /* scale */
+    .scale-up:hover {
+      transform: scale(1.5);
+    }
+
+    .scale-down:hover {
+      transform: scale(0.8);
+    }
+
+    /* skew */
+    .skew-x:hover {
+      transform: skewX(20deg);
+    }
+
+    .skew-y:hover {
+      transform: skewY(20deg);
+    }
+
+    /* 组合变换 */
+    .transform-combo:hover {
+      transform: translateX(50px) rotate(45deg) scale(1.2);
+    }
+
+    /* transform-origin */
+    .origin-demo {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .origin-item {
+      text-align: center;
+    }
+
+    .origin-item .box {
+      width: 100px;
+      height: 100px;
+      background: #3498db;
+      margin: 10px auto;
+      transition: transform 0.3s ease;
+    }
+
+    .origin-item:hover .box {
+      transform: rotate(45deg);
+    }
+
+    .origin-center .box {
+      transform-origin: center center;
+    }
+
+    .origin-top-left .box {
+      transform-origin: top left;
+    }
+
+    .origin-bottom-right .box {
+      transform-origin: bottom right;
+    }
+
+    /* 3D 变换 */
+    .perspective-container {
+      perspective: 1000px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .perspective-item {
+      text-align: center;
+    }
+
+    .perspective-item .box {
+      width: 100px;
+      height: 100px;
+      background: #3498db;
+      margin: 10px auto;
+      transition: transform 0.5s ease;
+    }
+
+    .perspective-item:hover .box {
+      background: #e74c3c;
+    }
+
+    .rotate-x:hover .box {
+      transform: rotateX(45deg);
+    }
+
+    .rotate-y:hover .box {
+      transform: rotateY(45deg);
+    }
+
+    .rotate-z:hover .box {
+      transform: rotateZ(45deg);
+    }
+
+    .rotate-3d-combo:hover .box {
+      transform: rotateX(45deg) rotateY(45deg);
+    }
+
+    /* 卡片翻转效果 */
+    .flip-card {
+      width: 200px;
+      height: 200px;
+      perspective: 1000px;
+      margin: 20px auto;
+    }
+
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+
+    .flip-card:hover .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .flip-card-front,
+    .flip-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: white;
+    }
+
+    .flip-card-front {
+      background: #3498db;
+    }
+
+    .flip-card-back {
+      background: #e74c3c;
+      transform: rotateY(180deg);
+    }
+
+    /* 按钮悬停效果 */
+    .button-demo {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .btn {
+      padding: 12px 30px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-1 {
+      background: #3498db;
+      color: white;
+    }
+
+    .btn-1:hover {
+      background: #2980b9;
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+    }
+
+    .btn-2 {
+      background: transparent;
+      color: #3498db;
+      border: 2px solid #3498db;
+    }
+
+    .btn-2:hover {
+      background: #3498db;
+      color: white;
+    }
+
+    .btn-3 {
+      background: #e74c3c;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-3::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .btn-3:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    .label {
+      display: inline-block;
+      background: #3498db;
+      color: white;
+      padding: 3px 10px;
+      border-radius: 3px;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>过渡与变换示例</h1>
+
+  <div class="demo-section">
+    <h2 class="demo-title">1. 过渡效果</h2>
+    <div class="demo-description">
+      鼠标悬停查看过渡效果
+    </div>
+    <div style="text-align: center;">
+      <div class="transition-box" style="display: inline-block;"></div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">2. 不同的 timing-function</h2>
+    <div class="demo-description">
+      不同的过渡速度曲线
+    </div>
+    <div class="transition-demo">
+      <div class="transition-item">
+        <span class="label">ease</span>
+        <div class="box ease"></div>
+      </div>
+      <div class="transition-item">
+        <span class="label">ease-in</span>
+        <div class="box ease-in"></div>
+      </div>
+      <div class="transition-item">
+        <span class="label">ease-out</span>
+        <div class="box ease-out"></div>
+      </div>
+      <div class="transition-item">
+        <span class="label">ease-in-out</span>
+        <div class="box ease-in-out"></div>
+      </div>
+      <div class="transition-item">
+        <span class="label">linear</span>
+        <div class="box linear"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">3. translate（平移）</h2>
+    <div class="transition-demo">
+      <div class="transition-item">
+        <span class="label">translateX</span>
+        <div class="transform-box translate-x"></div>
+      </div>
+      <div class="transition-item">
+        <span class="label">translateY</span>
+        <div class="transform-box translate-y"></div>
+      </div>
+      <div class="transition-item">
+        <span class="label">translate</span>
+        <div class="transform-box translate-xy"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">4. rotate（旋转）</h2>
+    <div class="transition-demo">
+      <div class="transition-item">
+        <span class="label">rotate 2D</span>
+        <div class="transform-box rotate"></div>
+      </div>
+      <div class="transition-item">
+        <span class="label">rotateY 3D</span>
+        <div class="transform-box rotate-3d"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">5. scale（缩放）</h2>
+    <div class="transition-demo">
+      <div class="transition-item">
+        <span class="label">scale up</span>
+        <div class="transform-box scale-up"></div>
+      </div>
+      <div class="transition-item">
+        <span class="label">scale down</span>
+        <div class="transform-box scale-down"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">6. skew（倾斜）</h2>
+    <div class="transition-demo">
+      <div class="transition-item">
+        <span class="label">skewX</span>
+        <div class="transform-box skew-x"></div>
+      </div>
+      <div class="transition-item">
+        <span class="label">skewY</span>
+        <div class="transform-box skew-y"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">7. 组合变换</h2>
+    <div class="transition-demo">
+      <div class="transition-item">
+        <span class="label">组合效果</span>
+        <div class="transform-box transform-combo"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">8. transform-origin</h2>
+    <div class="demo-description">
+      改变变换的原点位置
+    </div>
+    <div class="origin-demo">
+      <div class="origin-item origin-center">
+        <span class="label">center</span>
+        <div class="box"></div>
+      </div>
+      <div class="origin-item origin-top-left">
+        <span class="label">top left</span>
+        <div class="box"></div>
+      </div>
+      <div class="origin-item origin-bottom-right">
+        <span class="label">bottom right</span>
+        <div class="box"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">9. 3D 变换</h2>
+    <div class="perspective-container">
+      <div class="perspective-item rotate-x">
+        <span class="label">rotateX</span>
+        <div class="box"></div>
+      </div>
+      <div class="perspective-item rotate-y">
+        <span class="label">rotateY</span>
+        <div class="box"></div>
+      </div>
+      <div class="perspective-item rotate-z">
+        <span class="label">rotateZ</span>
+        <div class="box"></div>
+      </div>
+      <div class="perspective-item rotate-3d-combo">
+        <span class="label">3D combo</span>
+        <div class="box"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">10. 卡片翻转效果</h2>
+    <div class="flip-card">
+      <div class="flip-card-inner">
+        <div class="flip-card-front">正面</div>
+        <div class="flip-card-back">背面</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">11. 按钮悬停效果</h2>
+    <div class="button-demo">
+      <button class="btn btn-1">按钮 1</button>
+      <button class="btn btn-2">按钮 2</button>
+      <button class="btn btn-3">按钮 3</button>
+    </div>
+  </div>
+</body>
+</html>

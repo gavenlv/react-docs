@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>事件处理演示</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 40px 20px;
+      background: #f5f5f5;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 { text-align: center; color: #2c3e50; margin-bottom: 40px; }
+    .demo-section {
+      margin: 30px 0;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .demo-title {
+      font-size: 24px;
+      color: #f7df1e;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f7df1e;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 14px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+      transition: all 0.3s;
+      background: #f7df1e;
+      color: #000;
+    }
+    button:hover { background: #e5ce1b; }
+    .output {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 15px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      white-space: pre-wrap;
+    }
+    .mouse-area {
+      width: 300px;
+      height: 200px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 18px;
+      cursor: crosshair;
+      transition: all 0.3s;
+    }
+    .mouse-area:hover {
+      transform: scale(1.02);
+    }
+    .key-display {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
+    .key-box {
+      min-width: 60px;
+      height: 60px;
+      background: #f8f9fa;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .key-box.active {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+    .input-group { margin: 10px 0; }
+    .input-group input {
+      padding: 10px;
+      font-size: 14px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      width: 300px;
+    }
+    .input-group input:focus { border-color: #f7df1e; outline: none; }
+    .event-log {
+      max-height: 200px;
+      overflow-y: auto;
+      background: #282c34;
+      color: #98c379;
+      padding: 15px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+    .event-log p { margin: 5px 0; }
+    .draggable {
+      width: 100px;
+      height: 100px;
+      background: #e74c3c;
+      color: white;
+      border-radius: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: move;
+      position: absolute;
+      user-select: none;
+    }
+    .drag-container {
+      position: relative;
+      height: 200px;
+      background: #f0f0f0;
+      border-radius: 10px;
+      margin: 20px 0;
+    }
+    .delegation-list {
+      list-style: none;
+      margin: 20px 0;
+    }
+    .delegation-list li {
+      padding: 10px 15px;
+      background: #f8f9fa;
+      margin: 5px 0;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .delegation-list li:hover {
+      background: #667eea;
+      color: white;
+    }
+    .propagation-demo > div {
+      padding: 20px;
+      border-radius: 8px;
+    }
+    .propagation-demo .grandparent { background: #e3f2fd; }
+    .propagation-demo .parent { background: #bbdefb; }
+    .propagation-demo .child { background: #90caf9; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>事件处理演示</h1>
+  
+  <div class="demo-section">
+    <h2 class="demo-title">鼠标事件</h2>
+    <div class="mouse-area" id="mouseArea">
+      在这里移动鼠标
+    </div>
+    <div class="output" id="mouseOutput">鼠标位置：-</div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">键盘事件</h2>
+    <p>点击下方区域后按下键盘</p>
+    <div class="key-display" id="keyDisplay">
+      <div class="key-box" id="keyCtrl">Ctrl</div>
+      <div class="key-box" id="keyShift">Shift</div>
+      <div class="key-box" id="keyAlt">Alt</div>
+      <div class="key-box" id="keyMain">-</div>
+    </div>
+    <div class="output" id="keyOutput">按下键盘查看效果</div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">表单事件</h2>
+    <div class="input-group">
+      <input type="text" id="formInput" placeholder="输入内容...">
+    </div>
+    <div class="event-log" id="formLog"></div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">事件委托</h2>
+    <p>点击列表项（动态添加的项目也能响应）</p>
+    <ul class="delegation-list" id="delegationList">
+      <li data-id="1">项目 1</li>
+      <li data-id="2">项目 2</li>
+      <li data-id="3">项目 3</li>
+    </ul>
+    <button onclick="addItem()">添加项目</button>
+    <div class="output" id="delegationOutput">点击列表项查看效果</div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">事件传播</h2>
+    <div class="propagation-demo">
+      <div class="grandparent" id="grandparent">
+        祖父元素
+        <div class="parent" id="parent">
+          父元素
+          <div class="child" id="child">子元素（点击我）</div>
+        </div>
+      </div>
+    </div>
+    <label><input type="checkbox" id="stopPropagation"> 阻止事件传播</label>
+    <div class="event-log" id="propagationLog"></div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">拖拽功能</h2>
+    <div class="drag-container" id="dragContainer">
+      <div class="draggable" id="draggable">拖拽我</div>
+    </div>
+  </div>
+
+  <script>
+    const mouseArea = document.getElementById('mouseArea');
+    const mouseOutput = document.getElementById('mouseOutput');
+
+    mouseArea.addEventListener('mousemove', (e) => {
+      const rect = mouseArea.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      mouseOutput.textContent = `鼠标位置：(${x}, ${y})`;
+    });
+
+    mouseArea.addEventListener('mouseenter', () => {
+      mouseArea.textContent = '鼠标进入了！';
+    });
+
+    mouseArea.addEventListener('mouseleave', () => {
+      mouseArea.textContent = '在这里移动鼠标';
+      mouseOutput.textContent = '鼠标位置：-';
+    });
+
+    mouseArea.addEventListener('click', (e) => {
+      mouseOutput.textContent += '\n点击！';
+    });
+
+    document.addEventListener('keydown', (e) => {
+      document.getElementById('keyCtrl').classList.toggle('active', e.ctrlKey);
+      document.getElementById('keyShift').classList.toggle('active', e.shiftKey);
+      document.getElementById('keyAlt').classList.toggle('active', e.altKey);
+      document.getElementById('keyMain').textContent = e.key;
+      document.getElementById('keyMain').classList.add('active');
+      
+      document.getElementById('keyOutput').textContent = 
+        `按键: ${e.key}\n键码: ${e.code}\nCtrl: ${e.ctrlKey}\nShift: ${e.shiftKey}\nAlt: ${e.altKey}`;
+    });
+
+    document.addEventListener('keyup', (e) => {
+      document.getElementById('keyMain').classList.remove('active');
+    });
+
+    const formInput = document.getElementById('formInput');
+    const formLog = document.getElementById('formLog');
+
+    function logEvent(msg) {
+      const p = document.createElement('p');
+      p.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      formLog.prepend(p);
+      if (formLog.children.length > 10) {
+        formLog.removeChild(formLog.lastChild);
+      }
+    }
+
+    formInput.addEventListener('focus', () => logEvent('focus: 获得焦点'));
+    formInput.addEventListener('blur', () => logEvent('blur: 失去焦点'));
+    formInput.addEventListener('input', (e) => logEvent(`input: "${e.target.value}"`));
+    formInput.addEventListener('change', (e) => logEvent(`change: "${e.target.value}"`));
+
+    const delegationList = document.getElementById('delegationList');
+    let itemCount = 3;
+
+    delegationList.addEventListener('click', (e) => {
+      if (e.target.tagName === 'LI') {
+        const id = e.target.dataset.id;
+        document.getElementById('delegationOutput').textContent = 
+          `点击了项目 ID: ${id}\n内容: ${e.target.textContent}`;
+      }
+    });
+
+    function addItem() {
+      itemCount++;
+      const li = document.createElement('li');
+      li.dataset.id = itemCount;
+      li.textContent = `项目 ${itemCount}`;
+      delegationList.appendChild(li);
+    }
+
+    const propagationLog = document.getElementById('propagationLog');
+    const stopPropCheck = document.getElementById('stopPropagation');
+
+    function logPropagation(target, phase) {
+      const p = document.createElement('p');
+      p.textContent = `[${phase}] ${target}`;
+      propagationLog.prepend(p);
+    }
+
+    document.getElementById('grandparent').addEventListener('click', (e) => {
+      logPropagation('祖父元素', '冒泡');
+    });
+
+    document.getElementById('parent').addEventListener('click', (e) => {
+      logPropagation('父元素', '冒泡');
+    });
+
+    document.getElementById('child').addEventListener('click', (e) => {
+      logPropagation('子元素', '目标');
+      if (stopPropCheck.checked) {
+        e.stopPropagation();
+        logPropagation('(事件传播被阻止)', '-');
+      }
+    });
+
+    const draggable = document.getElementById('draggable');
+    const dragContainer = document.getElementById('dragContainer');
+    let isDragging = false;
+    let offsetX, offsetY;
+
+    draggable.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      const rect = draggable.getBoundingClientRect();
+      const containerRect = dragContainer.getBoundingClientRect();
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+      draggable.style.cursor = 'grabbing';
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      
+      const containerRect = dragContainer.getBoundingClientRect();
+      let x = e.clientX - containerRect.left - offsetX;
+      let y = e.clientY - containerRect.top - offsetY;
+      
+      x = Math.max(0, Math.min(x, containerRect.width - draggable.offsetWidth));
+      y = Math.max(0, Math.min(y, containerRect.height - draggable.offsetHeight));
+      
+      draggable.style.left = x + 'px';
+      draggable.style.top = y + 'px';
+    });
+
+    document.addEventListener('mouseup', () => {
+      isDragging = false;
+      draggable.style.cursor = 'move';
+    });
+  </script>
+</body>
+</html>

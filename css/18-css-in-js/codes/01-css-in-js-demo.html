@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS-in-JS 示例</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 40px 20px;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 40px;
+    }
+
+    .demo-section {
+      margin: 40px auto;
+      max-width: 1000px;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .demo-title {
+      font-size: 24px;
+      color: #61dafb;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #61dafb;
+    }
+
+    .demo-description {
+      background: #e7f9ff;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      border-left: 4px solid #61dafb;
+    }
+
+    .code-block {
+      background: #282c34;
+      color: #abb2bf;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      overflow-x: auto;
+      margin: 15px 0;
+      line-height: 1.6;
+    }
+
+    .code-title {
+      color: #61dafb;
+      font-weight: bold;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .keyword {
+      color: #c678dd;
+    }
+
+    .string {
+      color: #98c379;
+    }
+
+    .function {
+      color: #61dafb;
+    }
+
+    .component {
+      color: #e5c07b;
+    }
+
+    .comment {
+      color: #5c6370;
+    }
+
+    .tag {
+      color: #e06c75;
+    }
+
+    /* 模拟 styled-components 效果 */
+    .styled-button {
+      background: #61dafb;
+      color: #282c34;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin: 10px;
+    }
+
+    .styled-button:hover {
+      background: #21a1f1;
+      transform: translateY(-2px);
+    }
+
+    .styled-button--primary {
+      background: #61dafb;
+    }
+
+    .styled-button--secondary {
+      background: #95a5a6;
+      color: white;
+    }
+
+    .styled-button--danger {
+      background: #e74c3c;
+      color: white;
+    }
+
+    /* 模拟 CSS Modules 效果 */
+    .Card_card__1a2b3 {
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .Card_header__4c5d6 {
+      background: #61dafb;
+      color: #282c34;
+      padding: 20px;
+    }
+
+    .Card_body__7e8f9 {
+      padding: 20px;
+    }
+
+    /* 模拟 Emotion 效果 */
+    .css-1a2b3c4 {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      border-radius: 8px;
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    /* 模拟 Tailwind CSS 效果 */
+    .tw-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .tw-flex {
+      display: flex;
+    }
+
+    .tw-flex-wrap {
+      flex-wrap: wrap;
+    }
+
+    .tw-gap-4 {
+      gap: 16px;
+    }
+
+    .tw-rounded {
+      border-radius: 8px;
+    }
+
+    .tw-shadow {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .tw-p-6 {
+      padding: 24px;
+    }
+
+    .tw-bg-blue {
+      background: #3498db;
+    }
+
+    .tw-bg-green {
+      background: #2ecc71;
+    }
+
+    .tw-bg-purple {
+      background: #9b59b6;
+    }
+
+    .tw-text-white {
+      color: white;
+    }
+
+    .tw-text-center {
+      text-align: center;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .comparison-table th {
+      background: #f9f9f9;
+      font-weight: 600;
+    }
+
+    .label {
+      display: inline-block;
+      background: #61dafb;
+      color: #282c34;
+      padding: 3px 10px;
+      border-radius: 3px;
+      font-size: 12px;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <h1>CSS-in-JS 示例</h1>
+
+  <div class="demo-section">
+    <h2 class="demo-title">1. Styled Components</h2>
+    <div class="demo-description">
+      使用标签模板字符串创建样式化组件
+    </div>
+
+    <div class="code-block">
+      <span class="code-title">React + Styled Components：</span>
+      <span class="keyword">import</span> styled <span class="keyword">from</span> <span class="string">'styled-components'</span>;<br><br>
+
+      <span class="comment">// 创建样式化按钮组件</span><br>
+      <span class="keyword">const</span> <span class="component">Button</span> = styled<span class="function">.button</span>`<br>
+      &nbsp;&nbsp;background: <span class="string">#61dafb</span>;<br>
+      &nbsp;&nbsp;color: <span class="string">#282c34</span>;<br>
+      &nbsp;&nbsp;border: none;<br>
+      &nbsp;&nbsp;padding: 12px 30px;<br>
+      &nbsp;&nbsp;border-radius: 5px;<br>
+      &nbsp;&nbsp;cursor: pointer;<br>
+      &nbsp;&nbsp;transition: all 0.3s;<br><br>
+
+      &nbsp;&nbsp;&amp;:hover {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;background: <span class="string">#21a1f1</span>;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;transform: translateY(-2px);<br>
+      &nbsp;&nbsp;}<br>
+      `;<br><br>
+
+      <span class="comment">// 使用组件</span><br>
+      <span class="keyword">function</span> <span class="function">App</span>() {<br>
+      &nbsp;&nbsp;<span class="keyword">return</span> &lt;<span class="tag">Button</span>&gt;Click Me&lt;/<span class="tag">Button</span>&gt;;<br>
+      }
+    </div>
+
+    <div>
+      <button class="styled-button styled-button--primary">Primary Button</button>
+      <button class="styled-button styled-button--secondary">Secondary Button</button>
+      <button class="styled-button styled-button--danger">Danger Button</button>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">2. CSS Modules</h2>
+    <div class="demo-description">
+      CSS 文件局部作用域，自动生成唯一类名
+    </div>
+
+    <div class="code-block">
+      <span class="code-title">Card.module.css：</span>
+      <span class="tag">.card</span> {<br>
+      &nbsp;&nbsp;background: white;<br>
+      &nbsp;&nbsp;border-radius: 8px;<br>
+      &nbsp;&nbsp;box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);<br>
+      }<br><br>
+
+      <span class="tag">.header</span> {<br>
+      &nbsp;&nbsp;background: <span class="string">#61dafb</span>;<br>
+      &nbsp;&nbsp;padding: 20px;<br>
+      }<br><br>
+
+      <span class="tag">.body</span> {<br>
+      &nbsp;&nbsp;padding: 20px;<br>
+      }<br><br>
+
+      <span class="code-title">Card.jsx：</span>
+      <span class="keyword">import</span> styles <span class="keyword">from</span> <span class="string">'./Card.module.css'</span>;<br><br>
+
+      <span class="keyword">function</span> <span class="function">Card</span>() {<br>
+      &nbsp;&nbsp;<span class="keyword">return</span> (<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&lt;<span class="tag">div</span> className={styles.card}&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;<span class="tag">div</span> className={styles.header}&gt;Header&lt;/<span class="tag">div</span>&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;<span class="tag">div</span> className={styles.body}&gt;Body&lt;/<span class="tag">div</span>&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&lt;/<span class="tag">div</span>&gt;<br>
+      &nbsp;&nbsp;);<br>
+      }
+    </div>
+
+    <div class="Card_card__1a2b3">
+      <div class="Card_header__4c5d6">
+        <h3>CSS Modules 卡片</h3>
+      </div>
+      <div class="Card_body__7e8f9">
+        <p>编译后的类名：Card_card__1a2b3</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">3. Emotion</h2>
+    <div class="demo-description">
+      灵活的 CSS-in-JS 库
+    </div>
+
+    <div class="code-block">
+      <span class="code-title">React + Emotion：</span>
+      <span class="keyword">import</span> { css } <span class="keyword">from</span> <span class="string">'@emotion/react'</span>;<br><br>
+
+      <span class="keyword">const</span> style = css`<br>
+      &nbsp;&nbsp;background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);<br>
+      &nbsp;&nbsp;color: white;<br>
+      &nbsp;&nbsp;padding: 30px;<br>
+      &nbsp;&nbsp;border-radius: 8px;<br>
+      `;<br><br>
+
+      <span class="keyword">function</span> <span class="function">GradientBox</span>() {<br>
+      &nbsp;&nbsp;<span class="keyword">return</span> &lt;<span class="tag">div</span> css={style}&gt;Gradient Box&lt;/<span class="tag">div</span>&gt;;<br>
+      }
+    </div>
+
+    <div class="css-1a2b3c4">
+      <h3>Emotion 渐变盒子</h3>
+      <p>使用 Emotion 创建的样式化组件</p>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">4. Tailwind CSS</h2>
+    <div class="demo-description">
+      实用优先的 CSS 框架
+    </div>
+
+    <div class="code-block">
+      <span class="code-title">HTML + Tailwind：</span>
+      &lt;<span class="tag">div</span> class="<span class="string">flex gap-4 p-6</span>"&gt;<br>
+      &nbsp;&nbsp;&lt;<span class="tag">div</span> class="<span class="string">bg-blue text-white p-6 rounded shadow</span>"&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;Box 1<br>
+      &nbsp;&nbsp;&lt;/<span class="tag">div</span>&gt;<br>
+      &nbsp;&nbsp;&lt;<span class="tag">div</span> class="<span class="string">bg-green text-white p-6 rounded shadow</span>"&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;Box 2<br>
+      &nbsp;&nbsp;&lt;/<span class="tag">div</span>&gt;<br>
+      &lt;/<span class="tag">div</span>&gt;
+    </div>
+
+    <div class="tw-flex tw-flex-wrap tw-gap-4">
+      <div class="tw-bg-blue tw-text-white tw-p-6 tw-rounded tw-shadow tw-text-center">
+        <h4>Box 1</h4>
+        <p>Blue</p>
+      </div>
+      <div class="tw-bg-green tw-text-white tw-p-6 tw-rounded tw-shadow tw-text-center">
+        <h4>Box 2</h4>
+        <p>Green</p>
+      </div>
+      <div class="tw-bg-purple tw-text-white tw-p-6 tw-rounded tw-shadow tw-text-center">
+        <h4>Box 3</h4>
+        <p>Purple</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">5. 方案对比</h2>
+    <div class="demo-description">
+      不同 CSS-in-JS 方案的特点
+    </div>
+
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>方案</th>
+          <th>优点</th>
+          <th>缺点</th>
+          <th>适用场景</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Styled Components</strong></td>
+          <td>组件化、动态样式、主题支持</td>
+          <td>运行时开销、学习曲线</td>
+          <td>React 项目、动态主题</td>
+        </tr>
+        <tr>
+          <td><strong>CSS Modules</strong></td>
+          <td>局部作用域、零运行时、简单</td>
+          <td>不够灵活、静态样式</td>
+          <td>传统项目、静态样式</td>
+        </tr>
+        <tr>
+          <td><strong>Emotion</strong></td>
+          <td>灵活、性能好、SSR 支持</td>
+          <td>配置复杂</td>
+          <td>复杂应用、SSR 项目</td>
+        </tr>
+        <tr>
+          <td><strong>Tailwind CSS</strong></td>
+          <td>快速开发、一致性、体积小</td>
+          <td>类名冗长、定制成本</td>
+          <td>快速原型、团队协作</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">6. 动态样式示例</h2>
+    <div class="demo-description">
+      根据 props 动态改变样式
+    </div>
+
+    <div class="code-block">
+      <span class="code-title">Styled Components 动态样式：</span>
+      <span class="keyword">const</span> <span class="component">Button</span> = styled<span class="function">.button</span>`<br>
+      &nbsp;&nbsp;background: ${props => props.primary ? <span class="string">'#61dafb'</span> : <span class="string">'white'</span>};<br>
+      &nbsp;&nbsp;color: ${props => props.primary ? <span class="string">'white'</span> : <span class="string">'#61dafb'</span>};<br>
+      &nbsp;&nbsp;padding: 12px 30px;<br>
+      `;<br><br>
+
+      <span class="comment">// 使用</span><br>
+      &lt;<span class="tag">Button</span> primary&gt;Primary&lt;/<span class="tag">Button</span>&gt;<br>
+      &lt;<span class="tag">Button</span>&gt;Default&lt;/<span class="tag">Button</span>&gt;
+    </div>
+  </div>
+</body>
+</html>

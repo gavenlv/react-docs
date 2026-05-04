@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>模块化演示</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 40px 20px;
+      background: #f5f5f5;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 { text-align: center; color: #2c3e50; margin-bottom: 40px; }
+    .demo-section {
+      margin: 30px 0;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .demo-title {
+      font-size: 24px;
+      color: #f7df1e;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f7df1e;
+    }
+    .code-block {
+      background: #282c34;
+      color: #abb2bf;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      overflow-x: auto;
+      margin: 15px 0;
+      line-height: 1.6;
+    }
+    .keyword { color: #c678dd; }
+    .string { color: #98c379; }
+    .comment { color: #5c6370; font-style: italic; }
+    .output {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 15px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+    }
+    .file-tree {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      margin: 15px 0;
+    }
+    .file-tree .folder { color: #667eea; }
+    .file-tree .file { color: #27ae60; }
+  </style>
+</head>
+<body>
+  <h1>模块化演示</h1>
+  
+  <div class="demo-section">
+    <h2 class="demo-title">模块文件结构</h2>
+    <div class="file-tree">
+      <div class="folder">📁 src/</div>
+      <div style="margin-left: 20px;">
+        <div class="folder">📁 modules/</div>
+        <div style="margin-left: 20px;">
+          <div class="folder">📁 utils/</div>
+          <div style="margin-left: 20px;">
+            <div class="file">📄 index.js</div>
+            <div class="file">📄 string.js</div>
+            <div class="file">📄 number.js</div>
+          </div>
+          <div class="folder">📁 services/</div>
+          <div style="margin-left: 20px;">
+            <div class="file">📄 index.js</div>
+            <div class="file">📄 api.js</div>
+          </div>
+        </div>
+        <div class="file">📄 main.js</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">导出语法 (export)</h2>
+    <div class="code-block">
+      <span class="comment">// utils.js</span><br><br>
+      
+      <span class="comment">// 命名导出</span><br>
+      <span class="keyword">export const</span> PI = <span class="string">3.14159</span>;<br><br>
+      
+      <span class="keyword">export function</span> add(a, b) {<br>
+      &nbsp;&nbsp;<span class="keyword">return</span> a + b;<br>
+      }<br><br>
+      
+      <span class="comment">// 默认导出</span><br>
+      <span class="keyword">export default</span> <span class="keyword">class</span> Calculator {<br>
+      &nbsp;&nbsp;add(a, b) { <span class="keyword">return</span> a + b; }<br>
+      }
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">导入语法 (import)</h2>
+    <div class="code-block">
+      <span class="comment">// main.js</span><br><br>
+      
+      <span class="comment">// 命名导入</span><br>
+      <span class="keyword">import</span> { PI, add } <span class="keyword">from</span> <span class="string">'./utils.js'</span>;<br><br>
+      
+      <span class="comment">// 默认导入</span><br>
+      <span class="keyword">import</span> Calculator <span class="keyword">from</span> <span class="string">'./utils.js'</span>;<br><br>
+      
+      <span class="comment">// 导入所有</span><br>
+      <span class="keyword">import</span> * <span class="keyword">as</span> Utils <span class="keyword">from</span> <span class="string">'./utils.js'</span>;<br><br>
+      
+      <span class="comment">// 动态导入</span><br>
+      <span class="keyword">const</span> module = <span class="keyword">await</span> <span class="keyword">import</span>(<span class="string">'./utils.js'</span>);
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">模块特点</h2>
+    <div class="output">
+      <strong>1. 严格模式</strong>
+      ES Modules 默认使用严格模式
+
+      <strong>2. 单例模式</strong>
+      模块只执行一次，多次导入共享同一实例
+
+      <strong>3. 静态结构</strong>
+      import/export 必须在顶层
+
+      <strong>4. 异步加载</strong>
+      模块异步加载，不阻塞页面
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">在 HTML 中使用模块</h2>
+    <div class="code-block">
+      &lt;<span class="keyword">script</span> <span class="string">type="module"</span>&gt;<br>
+      &nbsp;&nbsp;<span class="keyword">import</span> { add } <span class="keyword">from</span> <span class="string">'./utils.js'</span>;<br>
+      &nbsp;&nbsp;console.<span class="keyword">log</span>(add(<span class="string">1</span>, <span class="string">2</span>));<br>
+      &lt;/<span class="keyword">script</span>&gt;
+    </div>
+  </div>
+
+  <script type="module">
+    const Utils = {
+      PI: 3.14159,
+      add: (a, b) => a + b,
+      subtract: (a, b) => a - b,
+      multiply: (a, b) => a * b,
+      divide: (a, b) => a / b
+    };
+
+    console.log('模块化示例:', Utils.add(5, 3));
+  </script>
+</body>
+</html>

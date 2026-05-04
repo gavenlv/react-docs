@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flexbox 示例</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 40px 20px;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 40px;
+    }
+
+    .demo-section {
+      margin: 40px auto;
+      max-width: 1000px;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .demo-title {
+      font-size: 24px;
+      color: #3498db;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #3498db;
+    }
+
+    .demo-description {
+      background: #e7f3ff;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      border-left: 4px solid #3498db;
+    }
+
+    /* Flexbox 容器示例 */
+    .flex-container {
+      display: flex;
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      min-height: 150px;
+    }
+
+    .flex-item {
+      background: #3498db;
+      color: white;
+      padding: 20px;
+      margin: 5px;
+      border-radius: 5px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    /* 不同的 justify-content 值 */
+    .justify-start {
+      justify-content: flex-start;
+    }
+
+    .justify-center {
+      justify-content: center;
+    }
+
+    .justify-end {
+      justify-content: flex-end;
+    }
+
+    .justify-between {
+      justify-content: space-between;
+    }
+
+    .justify-around {
+      justify-content: space-around;
+    }
+
+    .justify-evenly {
+      justify-content: space-evenly;
+    }
+
+    /* 不同的 align-items 值 */
+    .align-start {
+      align-items: flex-start;
+    }
+
+    .align-center {
+      align-items: center;
+    }
+
+    .align-end {
+      align-items: flex-end;
+    }
+
+    .align-stretch {
+      align-items: stretch;
+    }
+
+    .align-stretch .flex-item {
+      margin: 5px;
+    }
+
+    /* flex-direction */
+    .direction-row {
+      flex-direction: row;
+    }
+
+    .direction-column {
+      flex-direction: column;
+    }
+
+    .direction-row-reverse {
+      flex-direction: row-reverse;
+    }
+
+    /* flex-wrap */
+    .wrap-container {
+      flex-wrap: wrap;
+    }
+
+    /* 实际应用示例 */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #2c3e50;
+      color: white;
+      padding: 15px 30px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .navbar .logo {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .navbar ul {
+      display: flex;
+      list-style: none;
+      gap: 30px;
+    }
+
+    .navbar a {
+      color: white;
+      text-decoration: none;
+    }
+
+    /* 卡片网格 */
+    .card-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .card {
+      flex: 1 1 250px;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-image {
+      height: 150px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+    }
+
+    .card-content {
+      padding: 20px;
+    }
+
+    .card-title {
+      font-size: 18px;
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+
+    .card-text {
+      color: #7f8c8d;
+      font-size: 14px;
+    }
+
+    /* 水平垂直居中 */
+    .center-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 300px;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
+
+    .center-box {
+      background: #e74c3c;
+      color: white;
+      padding: 30px 50px;
+      border-radius: 8px;
+      font-size: 20px;
+    }
+
+    /* 圣杯布局 */
+    .holy-grail {
+      display: flex;
+      flex-direction: column;
+      min-height: 500px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .holy-grail-header,
+    .holy-grail-footer {
+      background: #2c3e50;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .holy-grail-body {
+      display: flex;
+      flex: 1;
+    }
+
+    .holy-grail-nav {
+      width: 200px;
+      background: #34495e;
+      color: white;
+      padding: 20px;
+    }
+
+    .holy-grail-content {
+      flex: 1;
+      padding: 20px;
+      background: #ecf0f1;
+    }
+
+    .holy-grail-sidebar {
+      width: 200px;
+      background: #34495e;
+      color: white;
+      padding: 20px;
+    }
+
+    .label {
+      display: inline-block;
+      background: #3498db;
+      color: white;
+      padding: 3px 10px;
+      border-radius: 3px;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Flexbox 弹性布局示例</h1>
+
+  <div class="demo-section">
+    <h2 class="demo-title">1. justify-content（主轴对齐）</h2>
+    
+    <div class="demo-description">
+      <strong>justify-content</strong> 控制项目在主轴上的对齐方式
+    </div>
+
+    <span class="label">flex-start</span>
+    <div class="flex-container justify-start">
+      <div class="flex-item">1</div>
+      <div class="flex-item">2</div>
+      <div class="flex-item">3</div>
+    </div>
+
+    <span class="label">center</span>
+    <div class="flex-container justify-center">
+      <div class="flex-item">1</div>
+      <div class="flex-item">2</div>
+      <div class="flex-item">3</div>
+    </div>
+
+    <span class="label">flex-end</span>
+    <div class="flex-container justify-end">
+      <div class="flex-item">1</div>
+      <div class="flex-item">2</div>
+      <div class="flex-item">3</div>
+    </div>
+
+    <span class="label">space-between</span>
+    <div class="flex-container justify-between">
+      <div class="flex-item">1</div>
+      <div class="flex-item">2</div>
+      <div class="flex-item">3</div>
+    </div>
+
+    <span class="label">space-around</span>
+    <div class="flex-container justify-around">
+      <div class="flex-item">1</div>
+      <div class="flex-item">2</div>
+      <div class="flex-item">3</div>
+    </div>
+
+    <span class="label">space-evenly</span>
+    <div class="flex-container justify-evenly">
+      <div class="flex-item">1</div>
+      <div class="flex-item">2</div>
+      <div class="flex-item">3</div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">2. align-items（交叉轴对齐）</h2>
+    
+    <div class="demo-description">
+      <strong>align-items</strong> 控制项目在交叉轴上的对齐方式
+    </div>
+
+    <span class="label">flex-start</span>
+    <div class="flex-container align-start">
+      <div class="flex-item" style="height: 80px;">1</div>
+      <div class="flex-item" style="height: 120px;">2</div>
+      <div class="flex-item" style="height: 60px;">3</div>
+    </div>
+
+    <span class="label">center</span>
+    <div class="flex-container align-center">
+      <div class="flex-item" style="height: 80px;">1</div>
+      <div class="flex-item" style="height: 120px;">2</div>
+      <div class="flex-item" style="height: 60px;">3</div>
+    </div>
+
+    <span class="label">flex-end</span>
+    <div class="flex-container align-end">
+      <div class="flex-item" style="height: 80px;">1</div>
+      <div class="flex-item" style="height: 120px;">2</div>
+      <div class="flex-item" style="height: 60px;">3</div>
+    </div>
+
+    <span class="label">stretch</span>
+    <div class="flex-container align-stretch">
+      <div class="flex-item">1</div>
+      <div class="flex-item">2</div>
+      <div class="flex-item">3</div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">3. flex-direction（主轴方向）</h2>
+    
+    <span class="label">row（默认）</span>
+    <div class="flex-container direction-row">
+      <div class="flex-item">1</div>
+      <div class="flex-item">2</div>
+      <div class="flex-item">3</div>
+    </div>
+
+    <span class="label">column</span>
+    <div class="flex-container direction-column">
+      <div class="flex-item">1</div>
+      <div class="flex-item">2</div>
+      <div class="flex-item">3</div>
+    </div>
+
+    <span class="label">row-reverse</span>
+    <div class="flex-container direction-row-reverse">
+      <div class="flex-item">1</div>
+      <div class="flex-item">2</div>
+      <div class="flex-item">3</div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">4. 实际应用：导航栏</h2>
+    <div class="navbar">
+      <div class="logo">Logo</div>
+      <ul>
+        <li><a href="#">首页</a></li>
+        <li><a href="#">产品</a></li>
+        <li><a href="#">关于</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">5. 实际应用：水平垂直居中</h2>
+    <div class="center-container">
+      <div class="center-box">水平垂直居中</div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">6. 实际应用：响应式卡片网格</h2>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-image">1</div>
+        <div class="card-content">
+          <h3 class="card-title">卡片标题</h3>
+          <p class="card-text">这是卡片内容描述</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-image">2</div>
+        <div class="card-content">
+          <h3 class="card-title">卡片标题</h3>
+          <p class="card-text">这是卡片内容描述</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-image">3</div>
+        <div class="card-content">
+          <h3 class="card-title">卡片标题</h3>
+          <p class="card-text">这是卡片内容描述</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2 class="demo-title">7. 实际应用：圣杯布局</h2>
+    <div class="holy-grail">
+      <header class="holy-grail-header">Header</header>
+      <div class="holy-grail-body">
+        <nav class="holy-grail-nav">Nav</nav>
+        <main class="holy-grail-content">Main Content</main>
+        <aside class="holy-grail-sidebar">Sidebar</aside>
+      </div>
+      <footer class="holy-grail-footer">Footer</footer>
+    </div>
+  </div>
+</body>
+</html>
